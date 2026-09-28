@@ -41,7 +41,7 @@ public class UsuarioEntity extends AuditoriaEntity {
     @Column(name = "dni")
     private String dni;
 
-    @Column(name = "codigo")
+    @Column(name = "codigo", insertable = false, updatable = false)
     private String codigo;
 
     @Column(name = "email")

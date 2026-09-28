@@ -7,7 +7,6 @@ import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.service.UsuarioService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import java.security.SecureRandom;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -52,16 +51,12 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apePaterno(request.getApePaterno())
                 .apeMaterno(request.getApeMaterno())
                 .dni(request.getDni())
-                .codigo("TMP-" + UUID.randomUUID())
                 .email(request.getEmail())
                 .contrasena(passwordEncoder.encode(contrasenaTemporal))
                 .activo(Boolean.TRUE)
                 .build();
 
-        usuario = usuarioRepository.save(usuario);
-        usuario.setCodigo(String.format("USR-%03d", usuario.getUsuarioId()));
         usuarioRepository.save(usuario);
-
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
     }
 
