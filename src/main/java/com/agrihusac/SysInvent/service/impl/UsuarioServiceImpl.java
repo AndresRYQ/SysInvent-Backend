@@ -24,6 +24,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final String MSG_USUARIO_REGISTRADO = "Usuario registrado correctamente";
     private static final String MSG_USUARIO_ACTUALIZADO = "Usuario actualizado correctamente";
+    private static final String MSG_USUARIO_ACTIVADO = "Usuario activado correctamente";
+    private static final String MSG_USUARIO_DESACTIVADO = "Usuario desactivado correctamente";
     private static final String MSG_USUARIO_NO_ENCONTRADO = "No se encontro el usuario";
     private static final String MSG_DNI_EXISTENTE = "El DNI ya se encuentra registrado";
     private static final String MSG_EMAIL_EXISTENTE = "El email ya se encuentra registrado";
@@ -82,6 +84,21 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> actualizarEstadoUsuario(Integer idUsuario, Boolean activo) {
+        UsuarioEntity usuario = usuarioRepository.findById(idUsuario).orElse(null);
+        if (usuario == null) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_USUARIO_NO_ENCONTRADO);
+        }
+
+        usuario.setActivo(activo);
+        usuarioRepository.save(usuario);
+
+        String mensaje = activo ? MSG_USUARIO_ACTIVADO : MSG_USUARIO_DESACTIVADO;
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
     }
 
     private String generarContrasena() {

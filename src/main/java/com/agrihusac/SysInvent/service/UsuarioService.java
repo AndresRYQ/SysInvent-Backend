@@ -9,4 +9,6 @@ public interface UsuarioService {
     ResponseEntity<Object> registrarUsuario(UsuarioRequest request);
 
     ResponseEntity<Object> actualizarUsuario(ActualizarUsuarioRequest request);
+
+    ResponseEntity<Object> actualizarEstadoUsuario(Integer idUsuario, Boolean activo);
 }
