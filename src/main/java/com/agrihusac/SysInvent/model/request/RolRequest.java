@@ -1,6 +1,7 @@
 package com.agrihusac.SysInvent.model.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,8 +13,14 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaludoRequest {
+public class RolRequest {
 
-    @NotBlank
-    private String mensaje;
+    @NotNull(message = "{message.required}")
+    private Integer rolId;
+
+    @NotBlank(message = "{message.required}")
+    private String nombre;
+
+    @NotBlank(message = "{message.required}")
+    private String descripcion;
 }
