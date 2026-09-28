@@ -10,5 +10,7 @@ public interface RolService {
 
     ResponseEntity<Object> registrarRol(RolRequest request);
 
+    ResponseEntity<Object> desactivarRol(Integer rolId);
+
     CustomPage<RolResponse> listarRoles(String nombre, Pageable pageable);
 }

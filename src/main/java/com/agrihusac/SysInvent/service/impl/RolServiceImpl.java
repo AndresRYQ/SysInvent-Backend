@@ -22,6 +22,7 @@ public class RolServiceImpl implements RolService {
 
     private static final String MSG_ROL_REGISTRADO = "Rol registrado correctamente";
     private static final String MSG_ROL_ACTUALIZADO = "Rol actualizado correctamente";
+    private static final String MSG_ROL_DESACTIVADO = "Rol desactivado correctamente";
     private static final String MSG_ROL_NO_ENCONTRADO = "No se encontró el rol";
 
     private final RolRepository rolRepository;
@@ -57,6 +58,21 @@ public class RolServiceImpl implements RolService {
 
         rolRepository.save(rol);
         return MessageResponse.setResponse(Boolean.TRUE, status, mensaje);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> desactivarRol(Integer rolId) {
+        RolEntity rol = rolRepository.findById(rolId).orElse(null);
+
+        if (rol == null) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
+        }
+
+        rol.setActivo(Boolean.FALSE);
+        rolRepository.save(rol);
+
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_ROL_DESACTIVADO);
     }
 
     @Override
