@@ -2,8 +2,8 @@ package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
 import com.agrihusac.SysInvent.model.request.LoginRequest;
-import com.agrihusac.SysInvent.model.response.LoginResponse;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
+import com.agrihusac.SysInvent.service.JwtService;
 import com.agrihusac.SysInvent.service.LoginService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,7 @@ public class LoginServiceImpl implements LoginService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     @Transactional(readOnly = true)
@@ -32,15 +33,7 @@ public class LoginServiceImpl implements LoginService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.UNAUTHORIZED, MSG_CREDENCIALES_INVALIDAS);
         }
 
-        LoginResponse response = LoginResponse.builder()
-                .usuarioId(usuario.getUsuarioId())
-                .usuario(usuario.getUsuario())
-                .nombres(usuario.getNombres())
-                .apePaterno(usuario.getApePaterno())
-                .apeMaterno(usuario.getApeMaterno())
-                .email(usuario.getEmail())
-                .build();
-
-        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_LOGIN_CORRECTO, response);
+        String token = jwtService.generateToken(usuario);
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_LOGIN_CORRECTO, token);
     }
 }
