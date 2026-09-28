@@ -1,6 +1,7 @@
 package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
+import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.service.UsuarioService;
@@ -22,7 +23,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final String MSG_USUARIO_REGISTRADO = "Usuario registrado correctamente";
+    private static final String MSG_USUARIO_ACTUALIZADO = "Usuario actualizado correctamente";
+    private static final String MSG_USUARIO_NO_ENCONTRADO = "No se encontro el usuario";
     private static final String MSG_DNI_EXISTENTE = "El DNI ya se encuentra registrado";
+    private static final String MSG_EMAIL_EXISTENTE = "El email ya se encuentra registrado";
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,10 +38,14 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_DNI_EXISTENTE);
         }
 
+        if (usuarioRepository.existsByEmail(request.getEmail())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
+        }
+
         String contrasenaTemporal = generarContrasena();
         log.debug("Contraseña temporal generada para el usuario {}: {}", request.getEmail(), contrasenaTemporal);
         UsuarioEntity usuario = UsuarioEntity.builder()
-                .usuario(request.getEmail())
+                .usuario(request.getDni())
                 .nombres(request.getNombres())
                 .apePaterno(request.getApePaterno())
                 .apeMaterno(request.getApeMaterno())
@@ -53,6 +61,27 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> actualizarUsuario(ActualizarUsuarioRequest request) {
+        UsuarioEntity usuario = usuarioRepository.findById(request.getUsuarioId()).orElse(null);
+        if (usuario == null) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_USUARIO_NO_ENCONTRADO);
+        }
+
+        if (usuarioRepository.existsByEmailAndUsuarioIdNot(request.getEmail(), request.getUsuarioId())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
+        }
+
+        usuario.setNombres(request.getNombres());
+        usuario.setApePaterno(request.getApePaterno());
+        usuario.setApeMaterno(request.getApeMaterno());
+        usuario.setEmail(request.getEmail());
+        usuarioRepository.save(usuario);
+
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
     }
 
     private String generarContrasena() {
