@@ -7,6 +7,8 @@ import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,7 @@ public class JwtService {
         this.expirationMilliseconds = expirationMilliseconds;
     }
 
-    public String generateToken(UsuarioEntity usuario) {
+    public String generateToken(UsuarioEntity usuario, List<Map<String, Object>> roles) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationMilliseconds);
 
@@ -31,6 +33,7 @@ public class JwtService {
                 .setSubject(usuario.getUsuario())
                 .claim("usuarioId", usuario.getUsuarioId())
                 .claim("email", usuario.getEmail())
+                .claim("roles", roles)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration)
                 .signWith(key, SignatureAlgorithm.HS256)

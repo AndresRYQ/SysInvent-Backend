@@ -1,12 +1,19 @@
 package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
+import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
 import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
+import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
+import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import com.agrihusac.SysInvent.service.UsuarioService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,8 +35,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final String MSG_USUARIO_NO_ENCONTRADO = "No se encontro el usuario";
     private static final String MSG_DNI_EXISTENTE = "El DNI ya se encuentra registrado";
     private static final String MSG_EMAIL_EXISTENTE = "El email ya se encuentra registrado";
+    private static final String MSG_ROL_NO_ENCONTRADO = "Uno o mas roles no existen o estan inactivos";
+    private static final String MSG_ROL_DUPLICADO = "La lista de roles contiene valores duplicados";
 
     private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
+    private final UsuarioRolRepository usuarioRolRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -41,6 +52,15 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
+        }
+
+        Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
+        if (rolesIds.size() != request.getRolesIds().size()) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
+        }
+
+        if (rolRepository.findAllByRolIdInAndActivoTrue(rolesIds).size() != rolesIds.size()) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
         String contrasenaTemporal = generarContrasena();
@@ -57,6 +77,14 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .build();
 
         usuarioRepository.save(usuario);
+
+        rolesIds.forEach(rolId -> usuarioRolRepository.save(UsuarioRolEntity.builder()
+                .usuarioId(usuario.getUsuarioId())
+                .rolId(rolId)
+                .activo(Boolean.TRUE)
+                .fechaAsignacion(LocalDate.now())
+                .build()));
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
     }
 
@@ -72,11 +100,38 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
         }
 
+        Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
+        if (rolesIds.size() != request.getRolesIds().size()) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
+        }
+
+        if (rolRepository.findAllByRolIdInAndActivoTrue(rolesIds).size() != rolesIds.size()) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
+        }
+
         usuario.setNombres(request.getNombres());
         usuario.setApePaterno(request.getApePaterno());
         usuario.setApeMaterno(request.getApeMaterno());
         usuario.setEmail(request.getEmail());
         usuarioRepository.save(usuario);
+
+        List<UsuarioRolEntity> rolesAsignados = usuarioRolRepository.findAllByUsuarioId(usuario.getUsuarioId());
+        Set<Integer> rolesExistentes = new HashSet<>();
+
+        rolesAsignados.forEach(usuarioRol -> {
+            rolesExistentes.add(usuarioRol.getRolId());
+            usuarioRol.setActivo(rolesIds.contains(usuarioRol.getRolId()));
+        });
+        usuarioRolRepository.saveAll(rolesAsignados);
+
+        rolesIds.stream()
+                .filter(rolId -> !rolesExistentes.contains(rolId))
+                .forEach(rolId -> usuarioRolRepository.save(UsuarioRolEntity.builder()
+                        .usuarioId(usuario.getUsuarioId())
+                        .rolId(rolId)
+                        .activo(Boolean.TRUE)
+                        .fechaAsignacion(LocalDate.now())
+                        .build()));
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
     }
