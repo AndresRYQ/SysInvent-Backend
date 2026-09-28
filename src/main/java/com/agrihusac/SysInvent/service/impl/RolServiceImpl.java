@@ -1,11 +1,16 @@
 package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.RolEntity;
+import com.agrihusac.SysInvent.model.mapper.GlobalMapper;
 import com.agrihusac.SysInvent.model.request.RolRequest;
+import com.agrihusac.SysInvent.model.response.RolResponse;
 import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.service.RolService;
+import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +25,7 @@ public class RolServiceImpl implements RolService {
     private static final String MSG_ROL_NO_ENCONTRADO = "No se encontró el rol";
 
     private final RolRepository rolRepository;
+    private final GlobalMapper globalMapper;
 
     @Override
     @Transactional
@@ -51,5 +57,13 @@ public class RolServiceImpl implements RolService {
 
         rolRepository.save(rol);
         return MessageResponse.setResponse(Boolean.TRUE, status, mensaje);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomPage<RolResponse> listarRoles(String nombre, Pageable pageable) {
+        Page<RolResponse> roles = rolRepository.listarRoles(nombre, pageable)
+                .map(projection -> globalMapper.map(projection, RolResponse.class));
+        return new CustomPage<>(roles);
     }
 }
