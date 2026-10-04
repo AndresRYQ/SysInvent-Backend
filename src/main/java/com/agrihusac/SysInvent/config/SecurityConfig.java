@@ -32,7 +32,8 @@ public class SecurityConfig {
                 )
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .httpBasic(httpBasic -> { });
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(formLogin -> formLogin.disable());
 
         return http.build();
     }
