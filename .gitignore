@@ -36,3 +36,11 @@ build/
 .env
 .env.*
 !.env.example
+
+# Base de datos local SQLite
+*.db
+*.db-shm
+*.db-wal
+data/*.sqlite
+data/*.sqlite3
+!data/.gitkeep
