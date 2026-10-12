@@ -26,12 +26,12 @@ public class CategoriaEntity extends AuditoriaEntity {
     @Column(name = "categoria_id")
     private Integer categoriaId;
 
-    @Column(name = "nombre")
+    @Column(name = "nombre", nullable = false, unique = true, length = 100)
     private String nombre;
 
-    @Column(name = "descripcion")
+    @Column(name = "descripcion", length = 255)
     private String descripcion;
 
-    @Column(name = "activo")
+    @Column(name = "activo", nullable = false)
     private Boolean activo;
 }

@@ -3,6 +3,7 @@ package com.agrihusac.SysInvent.utils;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestControllerAdvice
@@ -72,15 +72,19 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
-    public ResponseEntity<ErrorGenerico> handleSQLException(
+    public ResponseEntity<Object> handleSQLException(
             SQLIntegrityConstraintViolationException exception) {
-        ApiException apiException = new ApiException(
-                TypeMessage.DANGER,
-                exception.getMessage(),
-                HttpStatus.BAD_REQUEST
-        );
-        LOGGER.warn("{} | {}", exception.getMessage(), Arrays.toString(exception.getStackTrace()));
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiException.getErrorGenerico());
+        LOGGER.warn("Database uniqueness or integrity constraint rejected a request");
+        return MessageResponse.setResponse(false, HttpStatus.CONFLICT,
+                "El registro entra en conflicto con un valor único o una relación existente");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolationException(
+            DataIntegrityViolationException exception) {
+        LOGGER.warn("Database uniqueness or integrity constraint rejected a request");
+        return MessageResponse.setResponse(false, HttpStatus.CONFLICT,
+                "El registro entra en conflicto con un valor único o una relación existente");
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
