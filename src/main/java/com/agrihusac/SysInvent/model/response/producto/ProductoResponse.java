@@ -1,7 +1,20 @@
 package com.agrihusac.SysInvent.model.response.producto;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-/** Opaque placeholder; replace with fields from the approved frontend contract. */
-public record ProductoResponse(JsonNode payload) {
-}
+public record ProductoResponse(
+        Integer productoId,
+        String codigo,
+        String nombre,
+        String descripcion,
+        Integer tipoProductoId,
+        Integer categoriaId,
+        Integer unidadMedidaId,
+        Integer proveedorId,
+        BigDecimal stockActual,
+        BigDecimal stockMinimo,
+        BigDecimal precioUnitario,
+        Boolean activo,
+        LocalDate fechaRegistro
+) {}
