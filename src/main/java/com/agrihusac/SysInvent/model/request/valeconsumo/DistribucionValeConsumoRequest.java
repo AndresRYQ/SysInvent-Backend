@@ -1,7 +1,14 @@
 package com.agrihusac.SysInvent.model.request.valeconsumo;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 
-/** Opaque placeholder; distribution fields await the approved frontend contract. */
-public record DistribucionValeConsumoRequest(JsonNode payload) {
+import java.math.BigDecimal;
+
+public record DistribucionValeConsumoRequest(
+        @NotNull Integer destinoId,
+        Integer parteEquipoId,
+        @NotNull @DecimalMin(value = "0.0001") @Digits(integer = 14, fraction = 4) BigDecimal cantidad
+) {
 }

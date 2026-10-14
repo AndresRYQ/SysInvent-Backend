@@ -1,7 +1,13 @@
 package com.agrihusac.SysInvent.model.response.valeconsumo;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.math.BigDecimal;
 
-/** Opaque placeholder; distribution fields await the approved frontend contract. */
-public record DistribucionValeConsumoResponse(JsonNode payload) {
+public record DistribucionValeConsumoResponse(
+        Integer id,
+        Integer destinoId,
+        String destino,
+        Integer parteEquipoId,
+        String parteEquipo,
+        BigDecimal cantidad
+) {
 }

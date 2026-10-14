@@ -1,5 +1,8 @@
 package com.agrihusac.SysInvent.utils;
 
+import com.agrihusac.SysInvent.common.StockInsuficienteException;
+import com.agrihusac.SysInvent.common.ValeConsumoConflictException;
+import com.agrihusac.SysInvent.common.ValeConsumoValidationException;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,6 +40,35 @@ public class GlobalExceptionHandler {
         );
         LOGGER.warn(exception.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiException.getErrorGenerico());
+    }
+
+    @ExceptionHandler(StockInsuficienteException.class)
+    public ResponseEntity<Object> handleStockInsuficienteException(StockInsuficienteException exception) {
+        LOGGER.warn(exception.getMessage());
+        return MessageResponse.setResponse(
+                false,
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                Map.of("code", "STOCK_INSUFFICIENT", "productos", exception.getProductos())
+        );
+    }
+
+    @ExceptionHandler(ValeConsumoConflictException.class)
+    public ResponseEntity<Object> handleValeConsumoConflictException(ValeConsumoConflictException exception) {
+        LOGGER.warn(exception.getMessage());
+        return MessageResponse.setResponse(
+                false,
+                HttpStatus.CONFLICT,
+                exception.getMessage(),
+                Map.of("code", "VALE_CONSUMO_CONFLICT")
+        );
+    }
+
+    @ExceptionHandler(ValeConsumoValidationException.class)
+    public ResponseEntity<Object> handleValeConsumoValidationException(
+            ValeConsumoValidationException exception) {
+        LOGGER.warn(exception.getMessage());
+        return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

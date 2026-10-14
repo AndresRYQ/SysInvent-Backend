@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private static final String CONTRASENA_POR_DEFECTO = "agrihusa123";
     private static final String MSG_USUARIO_REGISTRADO = "Usuario registrado correctamente";
     private static final String MSG_USUARIO_ACTUALIZADO = "Usuario actualizado correctamente";
     private static final String MSG_USUARIO_ACTIVADO = "Usuario activado correctamente";
@@ -81,7 +80,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apeMaterno(request.getApeMaterno())
                 .dni(request.getDni())
                 .email(request.getEmail())
-                .contrasena(passwordEncoder.encode(CONTRASENA_POR_DEFECTO))
+                .contrasena(passwordEncoder.encode(request.getContrasena()))
                 .activo(Boolean.TRUE)
                 .build();
 

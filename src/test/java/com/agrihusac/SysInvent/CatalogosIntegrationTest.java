@@ -123,4 +123,10 @@ class CatalogosIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.proveedorId").value(proveedorId));
     }
+
+    @Test
+    void rolesCanBeListedWithJpaQuery() throws Exception {
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk());
+    }
 }
