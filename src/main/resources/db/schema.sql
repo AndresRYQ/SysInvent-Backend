@@ -416,3 +416,38 @@ BEGIN
 END;
 GO
 
+/* ============================================================
+   MÓDULOS DISPONIBLES EN LA APLICACIÓN
+   ============================================================ */
+
+INSERT INTO dbo.modulo (fecha_registro, activo, nombre, ruta)
+SELECT CAST(SYSDATETIME() AS DATE), 1, catalogo.nombre, catalogo.ruta
+FROM (VALUES
+    ('Roles', '/roles'),
+    ('Usuarios', '/usuarios'),
+    ('Tipos de producto', '/tipos-producto'),
+    ('Proveedores', '/proveedores'),
+    ('Tipos de documento', '/tipos-documento'),
+    ('Destinos', '/destinos'),
+    ('Productos', '/productos'),
+    ('Unidades de medida', '/unidades-medida'),
+    ('Categorías', '/categorias'),
+    ('Centros de costo', '/centros-costos'),
+    ('Bitácora', '/bitacora'),
+    ('Reporte de ingresos', '/reportes/ingresos'),
+    ('Reporte de vales', '/reportes/vales'),
+    ('Productos más pedidos', '/reportes/productos-mas-pedidos'),
+    ('Contactos', '/contactos'),
+    ('Partes de equipo', '/partes-equipo'),
+    ('Control de almacén', '/control-almacen'),
+    ('Vales de consumo', '/vales-consumo'),
+    ('Ingresos de almacén', '/ingresos-almacen'),
+    ('Perfil de usuario', '/perfil')
+) AS catalogo(nombre, ruta)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.modulo modulo_existente
+    WHERE modulo_existente.nombre = catalogo.nombre
+);
+GO
+
