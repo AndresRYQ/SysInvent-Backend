@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RolResponse {
-
     private Integer rolId;
     private String nombre;
     private String descripcion;

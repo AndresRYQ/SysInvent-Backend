@@ -75,7 +75,7 @@ public class LoginServiceImpl implements LoginService {
 
         boolean administrador = rolesIds.contains(ADMIN_ROLE_ID);
         List<ModuloEntity> modulosActivos = administrador
-                ? moduloRepository.findAllByActivoTrueOrderByModuloIdAsc()
+                ? List.of()
                 : obtenerModulosAsignados(relacionesRolModulo);
 
         Map<Integer, ModuloEntity> modulosPorId = modulosActivos.stream()
@@ -91,7 +91,7 @@ public class LoginServiceImpl implements LoginService {
 
         for (RolEntity rol : rolesEntities) {
             List<Integer> moduloIds = rol.getRolId() != null && rol.getRolId() == ADMIN_ROLE_ID
-                    ? new ArrayList<>(modulosPorId.keySet())
+                    ? List.of()
                     : moduloIdsPorRol.getOrDefault(rol.getRolId(), List.of());
 
             List<Map<String, Object>> modulosDelRol = moduloIds.stream()

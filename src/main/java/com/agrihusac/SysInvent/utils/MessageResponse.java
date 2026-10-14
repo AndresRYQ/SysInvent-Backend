@@ -9,10 +9,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Getter;
 
+@Getter
 public class MessageResponse {
 
+    private final boolean success;
+    private final String message;
+    private final int status;
+    private final Object data;
+
     private MessageResponse() {
+        this(false, null, 0, null);
+    }
+
+    private MessageResponse(boolean success, String message, int status, Object data) {
+        this.success = success;
+        this.message = message;
+        this.status = status;
+        this.data = data;
+    }
+
+    public static ResponseEntity<MessageResponse> setMessageResponse(
+            boolean success,
+            HttpStatus status,
+            String message) {
+        return new ResponseEntity<>(
+                new MessageResponse(success, message, status.value(), null),
+                status);
     }
 
     public static ResponseEntity<Object> setResponse(

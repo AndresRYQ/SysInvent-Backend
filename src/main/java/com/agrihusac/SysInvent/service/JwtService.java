@@ -32,14 +32,19 @@ public class JwtService {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationMilliseconds);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setSubject(usuario.getUsuario())
                 .claim("usuarioId", usuario.getUsuarioId())
                 .claim("email", usuario.getEmail())
                 .claim("roles", roles)
-                .claim("modulos", modulos)
                 .setIssuedAt(issuedAt)
-                .setExpiration(expiration)
+                .setExpiration(expiration);
+
+        if (!modulos.isEmpty()) {
+            builder.claim("modulos", modulos);
+        }
+
+        return builder
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RolModuloRepository extends JpaRepository<RolModuloEntity, Integer> {
 
+    List<RolModuloEntity> findAllByRolId(Integer rolId);
+
     List<RolModuloEntity> findAllByRolIdInAndActivoTrue(Collection<Integer> rolIds);
 }
