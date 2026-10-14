@@ -2,20 +2,23 @@ package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
 import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
+import com.agrihusac.SysInvent.model.mapper.GlobalMapper;
 import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
+import com.agrihusac.SysInvent.model.response.UsuarioResponse;
 import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import com.agrihusac.SysInvent.service.UsuarioService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
-import java.security.SecureRandom;
+import com.agrihusac.SysInvent.utils.CustomPage;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,10 +27,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final String CONTRASENA_POR_DEFECTO = "agrihusa123";
     private static final String MSG_USUARIO_REGISTRADO = "Usuario registrado correctamente";
     private static final String MSG_USUARIO_ACTUALIZADO = "Usuario actualizado correctamente";
     private static final String MSG_USUARIO_ACTIVADO = "Usuario activado correctamente";
@@ -42,6 +44,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final RolRepository rolRepository;
     private final UsuarioRolRepository usuarioRolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GlobalMapper globalMapper;
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomPage<UsuarioResponse> listarUsuarios(String usuario, String rol, Boolean estado, Pageable pageable) {
+        Page<UsuarioResponse> usuarios = usuarioRepository.listarUsuarios(usuario, rol, estado, pageable)
+                .map(projection -> globalMapper.map(projection, UsuarioResponse.class));
+        return new CustomPage<>(usuarios);
+    }
 
     @Override
     @Transactional
@@ -63,8 +74,6 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
-        String contrasenaTemporal = generarContrasena();
-        log.debug("Contraseña temporal generada para el usuario {}: {}", request.getEmail(), contrasenaTemporal);
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .usuario(request.getDni())
                 .nombres(request.getNombres())
@@ -72,7 +81,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apeMaterno(request.getApeMaterno())
                 .dni(request.getDni())
                 .email(request.getEmail())
-                .contrasena(passwordEncoder.encode(contrasenaTemporal))
+                .contrasena(passwordEncoder.encode(CONTRASENA_POR_DEFECTO))
                 .activo(Boolean.TRUE)
                 .build();
 
@@ -151,7 +160,4 @@ public class UsuarioServiceImpl implements UsuarioService {
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
     }
 
-    private String generarContrasena() {
-        return String.format("%07d", SECURE_RANDOM.nextInt(10_000_000));
-    }
 }
