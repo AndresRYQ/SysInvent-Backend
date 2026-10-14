@@ -206,6 +206,28 @@ CREATE TABLE IF NOT EXISTS distribucion_vale_consumo (
     FOREIGN KEY (parte_equipo_id) REFERENCES parte_equipo (parte_equipo_id)
 );
 
+CREATE TABLE IF NOT EXISTS kardex_movimiento (
+    kardex_movimiento_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vale_consumo_id INTEGER NOT NULL,
+    producto_id INTEGER NOT NULL,
+    tipo_movimiento TEXT NOT NULL
+        CHECK (tipo_movimiento IN ('SALIDA_VALE', 'AJUSTE_SALIDA', 'AJUSTE_ENTRADA', 'ANULACION_ENTRADA')),
+    fecha_movimiento TEXT NOT NULL,
+    cantidad NUMERIC NOT NULL CHECK (cantidad > 0),
+    saldo_anterior NUMERIC NOT NULL CHECK (saldo_anterior >= 0),
+    saldo_nuevo NUMERIC NOT NULL CHECK (saldo_nuevo >= 0),
+    precio_unitario NUMERIC NOT NULL,
+    centro_costo_id INTEGER NOT NULL,
+    destino_id INTEGER,
+    parte_equipo_id INTEGER,
+    numero_documento TEXT NOT NULL,
+    FOREIGN KEY (vale_consumo_id) REFERENCES vale_consumo (vale_consumo_id),
+    FOREIGN KEY (producto_id) REFERENCES producto (producto_id),
+    FOREIGN KEY (centro_costo_id) REFERENCES centro_costo (centro_costo_id),
+    FOREIGN KEY (destino_id) REFERENCES destino (destino_id),
+    FOREIGN KEY (parte_equipo_id) REFERENCES parte_equipo (parte_equipo_id)
+);
+
 CREATE TABLE IF NOT EXISTS bitacora (
     bitacora_id INTEGER PRIMARY KEY AUTOINCREMENT,
     fecha_hora TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
