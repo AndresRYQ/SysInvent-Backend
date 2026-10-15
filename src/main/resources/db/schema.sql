@@ -485,3 +485,46 @@ WHERE NOT EXISTS (
     WHERE modulo_existente.nombre = catalogo.nombre
 );
 GO
+
+/* ============================================================
+   DATOS INICIALES
+   ============================================================ */
+
+INSERT INTO dbo.rol (fecha_registro, activo, nombre, descripcion)
+SELECT CAST(SYSDATETIME() AS DATE), 1, 'ADMINISTRADOR', 'Rol con acceso completo al sistema'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.rol rol_existente
+    WHERE rol_existente.nombre = 'ADMINISTRADOR'
+);
+GO
+
+INSERT INTO dbo.usuario (
+    fecha_registro,
+    activo,
+    usuario,
+    nombres,
+    ape_paterno,
+    ape_materno,
+    dni,
+    codigo,
+    email,
+    contrasena
+)
+SELECT
+    CAST(SYSDATETIME() AS DATE),
+    1,
+    '71477205',
+    'Carlos Jesus',
+    'Chinchay',
+    'Pecho',
+    '71477205',
+    'USR001',
+    'carlos@yopmail.com',
+    '$2a$10$Efa0BQyjCWDzNwwTwzcs6.6A2sceUD4fDCZXqDuDYbAjmX4HXlNjK'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.usuario usuario_existente
+    WHERE usuario_existente.usuario = '71477205'
+);
+GO
