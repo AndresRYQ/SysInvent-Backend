@@ -31,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -441,6 +443,7 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
     ) {
         KardexMovimientoEntity movimiento = new KardexMovimientoEntity();
         movimiento.setValeConsumoId(vale.getValeConsumoId());
+        movimiento.setUsuarioResponsable(usuarioActual());
         movimiento.setProductoId(productoId);
         movimiento.setTipoMovimiento(tipo);
         movimiento.setFechaMovimiento(LocalDateTime.now());
@@ -453,6 +456,13 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
         movimiento.setParteEquipoId(parteEquipoId);
         movimiento.setNumeroDocumento(vale.getNumeroVale());
         return movimiento;
+    }
+
+    private String usuarioActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null || authentication.getName() == null
+                ? "sistema"
+                : authentication.getName();
     }
 
     private ValeConsumoResponse convertir(ValeConsumoEntity vale) {
@@ -502,12 +512,21 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
                 .map(movimiento -> new KardexMovimientoResponse(
                         movimiento.getKardexMovimientoId(),
                         movimiento.getProductoId(),
+                        productoRepository.findById(movimiento.getProductoId())
+                            .map(ProductoEntity::getCodigo).orElse(null),
+                        productoRepository.findById(movimiento.getProductoId())
+                            .map(ProductoEntity::getNombre).orElse(null),
                         movimiento.getTipoMovimiento(),
                         movimiento.getFechaMovimiento(),
                         movimiento.getCantidad(),
                         movimiento.getSaldoAnterior(),
                         movimiento.getSaldoNuevo(),
                         movimiento.getPrecioUnitario(),
+                        movimiento.getUsuarioResponsable(),
+                        movimiento.getNumeroDocumento(),
+                        movimiento.getIngresoAlmacenId(),
+                        movimiento.getValeConsumoId(),
+                        movimiento.getCentroCostoId(),
                         movimiento.getDestinoId(),
                         movimiento.getParteEquipoId()
                 ))

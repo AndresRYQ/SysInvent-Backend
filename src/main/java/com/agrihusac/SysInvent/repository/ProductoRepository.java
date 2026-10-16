@@ -5,10 +5,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
+
+import java.util.Optional;
 
 import java.math.BigDecimal;
 
 public interface ProductoRepository extends JpaRepository<ProductoEntity, Integer> {
+
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("select p from ProductoEntity p where p.productoId = :productoId")
+        Optional<ProductoEntity> buscarParaActualizar(@Param("productoId") Integer productoId);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""

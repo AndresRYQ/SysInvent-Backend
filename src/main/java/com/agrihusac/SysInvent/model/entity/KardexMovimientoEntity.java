@@ -25,8 +25,14 @@ public class KardexMovimientoEntity {
     @Column(name = "kardex_movimiento_id")
     private Long kardexMovimientoId;
 
-    @Column(name = "vale_consumo_id", nullable = false)
+    @Column(name = "vale_consumo_id")
     private Integer valeConsumoId;
+
+    @Column(name = "ingreso_almacen_id")
+    private Integer ingresoAlmacenId;
+
+    @Column(name = "usuario_responsable", nullable = false, length = 100)
+    private String usuarioResponsable;
 
     @Column(name = "producto_id", nullable = false)
     private Integer productoId;
@@ -49,7 +55,7 @@ public class KardexMovimientoEntity {
     @Column(name = "precio_unitario", nullable = false, precision = 18, scale = 4)
     private BigDecimal precioUnitario;
 
-    @Column(name = "centro_costo_id", nullable = false)
+    @Column(name = "centro_costo_id")
     private Integer centroCostoId;
 
     @Column(name = "destino_id")
