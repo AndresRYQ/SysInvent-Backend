@@ -46,7 +46,7 @@ public class RolServiceImpl implements RolService {
         Set<Integer> moduloIds = new HashSet<>(request.getModulos());
         long modulosActivos = moduloRepository.findAllByModuloIdInAndActivoTrue(moduloIds).size();
         if (modulosActivos != moduloIds.size()) {
-            return MessageResponse.setMessageResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST,
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST,
                     "Uno o más módulos no existen o están inactivos");
         }
 
@@ -57,7 +57,7 @@ public class RolServiceImpl implements RolService {
                 .build();
         rol = rolRepository.save(rol);
         sincronizarModulos(rol.getRolId(), moduloIds);
-        return MessageResponse.setMessageResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_ROL_REGISTRADO);
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_ROL_REGISTRADO);
     }
 
     private void sincronizarModulos(Integer rolId, Set<Integer> moduloIds) {
@@ -88,7 +88,7 @@ public class RolServiceImpl implements RolService {
         Set<Integer> moduloIds = new HashSet<>(request.getModulos());
         long modulosActivos = moduloRepository.findAllByModuloIdInAndActivoTrue(moduloIds).size();
         if (modulosActivos != moduloIds.size()) {
-            return MessageResponse.setMessageResponse(
+            return MessageResponse.setResponse(
                     Boolean.FALSE,
                     HttpStatus.BAD_REQUEST,
                     "Uno o más módulos no existen o están inactivos");
@@ -96,7 +96,7 @@ public class RolServiceImpl implements RolService {
 
         RolEntity rol = rolRepository.findById(request.getRolId()).orElse(null);
         if (rol == null) {
-            return MessageResponse.setMessageResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
         rol.setNombre(request.getNombre());
@@ -104,7 +104,7 @@ public class RolServiceImpl implements RolService {
         rolRepository.save(rol);
         sincronizarModulos(rol.getRolId(), moduloIds);
 
-        return MessageResponse.setMessageResponse(Boolean.TRUE, HttpStatus.OK, MSG_ROL_ACTUALIZADO);
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_ROL_ACTUALIZADO);
     }
 
     @Override
@@ -113,14 +113,14 @@ public class RolServiceImpl implements RolService {
         RolEntity rol = rolRepository.findById(rolId).orElse(null);
 
         if (rol == null) {
-            return MessageResponse.setMessageResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
         rol.setActivo(activo);
         rolRepository.save(rol);
 
         String mensaje = Boolean.TRUE.equals(activo) ? MSG_ROL_ACTIVADO : MSG_ROL_DESACTIVADO;
-        return MessageResponse.setMessageResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
     }
 
     @Override
