@@ -55,7 +55,7 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
 
     @Override
     protected Page<ProveedorEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndRazonSocialContainingIgnoreCase(filtro, pageable);
+        return repository.findByRazonSocialContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
