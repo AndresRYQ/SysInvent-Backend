@@ -5,6 +5,7 @@ import com.agrihusac.SysInvent.model.request.centrocosto.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.response.centrocosto.CentroCostoResponse;
 import com.agrihusac.SysInvent.service.centrocosto.CentroCostoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -31,20 +32,20 @@ public class CentroCostoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> obtener(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
+    public ResponseEntity<MessageResponse> obtener(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@Valid @RequestBody CentroCostoRequest request) { return service.crear(request); }
+    public ResponseEntity<MessageResponse> crear(@Valid @RequestBody CentroCostoRequest request) { return service.crear(request); }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable @Min(1) Integer id, @Valid @RequestBody CentroCostoRequest request) {
+    public ResponseEntity<MessageResponse> actualizar(@PathVariable @Min(1) Integer id, @Valid @RequestBody CentroCostoRequest request) {
         return service.actualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> desactivar(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
+    public ResponseEntity<MessageResponse> desactivar(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
 
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Object> cambiarEstado(@PathVariable @Min(1) Integer id,
+    public ResponseEntity<MessageResponse> cambiarEstado(@PathVariable @Min(1) Integer id,
             @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
 }

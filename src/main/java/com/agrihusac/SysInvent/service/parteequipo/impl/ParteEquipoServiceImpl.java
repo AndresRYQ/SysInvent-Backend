@@ -64,7 +64,7 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
     protected boolean estaActivo(ParteEquipoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ParteEquipoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ParteEquipoRequest request) {
         return null;
     }
 }

@@ -5,6 +5,7 @@ import com.agrihusac.SysInvent.model.request.catalogo.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.response.catalogo.CategoriaCatalogoResponse;
 import com.agrihusac.SysInvent.service.CategoriaService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,28 +34,28 @@ public class CategoriaCatalogoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> obtener(@PathVariable @Min(1) Integer id) {
+    public ResponseEntity<MessageResponse> obtener(@PathVariable @Min(1) Integer id) {
         return service.obtener(id);
     }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@Valid @RequestBody CategoriaCatalogoRequest request) {
+    public ResponseEntity<MessageResponse> crear(@Valid @RequestBody CategoriaCatalogoRequest request) {
         return service.crear(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable @Min(1) Integer id,
+    public ResponseEntity<MessageResponse> actualizar(@PathVariable @Min(1) Integer id,
                                              @Valid @RequestBody CategoriaCatalogoRequest request) {
         return service.actualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> desactivar(@PathVariable @Min(1) Integer id) {
+    public ResponseEntity<MessageResponse> desactivar(@PathVariable @Min(1) Integer id) {
         return service.cambiarEstado(id, false);
     }
 
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Object> cambiarEstado(@PathVariable @Min(1) Integer id,
+    public ResponseEntity<MessageResponse> cambiarEstado(@PathVariable @Min(1) Integer id,
                                                 @Valid @RequestBody EstadoCatalogoRequest request) {
         return service.cambiarEstado(id, request.activo());
     }

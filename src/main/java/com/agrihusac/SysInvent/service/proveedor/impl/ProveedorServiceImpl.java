@@ -68,7 +68,7 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
     protected boolean estaActivo(ProveedorEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ProveedorRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ProveedorRequest request) {
         return null;
     }
 }

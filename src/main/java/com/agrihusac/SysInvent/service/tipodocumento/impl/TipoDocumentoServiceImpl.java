@@ -62,7 +62,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
     protected boolean estaActivo(TipoDocumentoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(TipoDocumentoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(TipoDocumentoRequest request) {
         return null;
     }
 }

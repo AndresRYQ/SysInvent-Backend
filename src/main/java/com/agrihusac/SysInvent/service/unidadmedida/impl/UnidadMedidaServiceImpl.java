@@ -62,7 +62,7 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
     protected boolean estaActivo(UnidadMedidaEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(UnidadMedidaRequest request) {
+    protected ResponseEntity<MessageResponse> validar(UnidadMedidaRequest request) {
         return null;
     }
 }

@@ -5,6 +5,9 @@ import com.agrihusac.SysInvent.model.request.destino.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.response.destino.DestinoResponse;
 import com.agrihusac.SysInvent.service.destino.DestinoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,11 +22,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/catalogos/destinos")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Destinos", description = "Operaciones de destinos")
 public class DestinoController {
     private final DestinoService service;
 
     @GetMapping
-    public CustomPage<DestinoResponse> listar(@RequestParam(value = "nombre", required = false) String nombre,
+    @Operation(operationId = "listarDestinos", summary = "Listar destinos")
+    public CustomPage<DestinoResponse> listarDestinos(@RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
             @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
@@ -31,20 +36,25 @@ public class DestinoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> obtener(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
+    @Operation(operationId = "obtenerDestino", summary = "Obtener destino por ID")
+    public ResponseEntity<MessageResponse> obtenerDestino(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
 
     @PostMapping
-    public ResponseEntity<Object> crear(@Valid @RequestBody DestinoRequest request) { return service.crear(request); }
+    @Operation(operationId = "registrarDestino", summary = "Registrar destino")
+    public ResponseEntity<MessageResponse> registrarDestino(@Valid @RequestBody DestinoRequest request) { return service.crear(request); }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable @Min(1) Integer id, @Valid @RequestBody DestinoRequest request) {
+    @Operation(operationId = "actualizarDestino", summary = "Actualizar destino")
+    public ResponseEntity<MessageResponse> actualizarDestino(@PathVariable @Min(1) Integer id, @Valid @RequestBody DestinoRequest request) {
         return service.actualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> desactivar(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
+    @Operation(operationId = "desactivarDestino", summary = "Desactivar destino")
+    public ResponseEntity<MessageResponse> desactivarDestino(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
 
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Object> cambiarEstado(@PathVariable @Min(1) Integer id,
+    @Operation(operationId = "cambiarEstadoDestino", summary = "Cambiar estado del destino")
+    public ResponseEntity<MessageResponse> cambiarEstadoDestino(@PathVariable @Min(1) Integer id,
             @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
 }

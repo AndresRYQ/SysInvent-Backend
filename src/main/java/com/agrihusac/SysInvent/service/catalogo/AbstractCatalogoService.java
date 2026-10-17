@@ -36,29 +36,29 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
 
     protected abstract boolean estaActivo(E entity);
 
-    protected ResponseEntity<Object> validar(Q request) {
+    protected ResponseEntity<MessageResponse> validar(Q request) {
         return null;
     }
 
     @Override
     @Transactional
-    public ResponseEntity<Object> crear(Q request) {
-        ResponseEntity<Object> error = validar(request);
+    public ResponseEntity<MessageResponse> crear(Q request) {
+        ResponseEntity<MessageResponse> error = validar(request);
         if (error != null) {
             return error;
         }
         if (duplicado(request, null)) {
             return conflicto();
         }
-        E entity = repository.saveAndFlush(crearEntidad(request));
+        repository.saveAndFlush(crearEntidad(request));
         return MessageResponse.setResponse(true, HttpStatus.CREATED,
-                nombreCatalogo() + " registrado correctamente", respuesta(entity));
+                nombreCatalogo() + " registrado correctamente");
     }
 
     @Override
     @Transactional
-    public ResponseEntity<Object> actualizar(Integer id, Q request) {
-        ResponseEntity<Object> error = validar(request);
+    public ResponseEntity<MessageResponse> actualizar(Integer id, Q request) {
+        ResponseEntity<MessageResponse> error = validar(request);
         if (error != null) {
             return error;
         }
@@ -78,9 +78,9 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<Object> obtener(Integer id) {
+    public ResponseEntity<MessageResponse> obtener(Integer id) {
         return repository.findById(id)
-                .<ResponseEntity<Object>>map(entity -> MessageResponse.setResponse(
+                .<ResponseEntity<MessageResponse>>map(entity -> MessageResponse.setResponse(
                         true, HttpStatus.OK, "Registro encontrado", respuesta(entity)))
                 .orElseGet(this::noEncontrado);
     }
@@ -95,7 +95,7 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
 
     @Override
     @Transactional
-    public ResponseEntity<Object> cambiarEstado(Integer id, boolean activo) {
+    public ResponseEntity<MessageResponse> cambiarEstado(Integer id, boolean activo) {
         Optional<E> result = repository.findById(id);
         if (result.isEmpty()) {
             return noEncontrado();
@@ -112,12 +112,12 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         return estaActivo(entity);
     }
 
-    private ResponseEntity<Object> conflicto() {
+    private <T> ResponseEntity<T> conflicto() {
         return MessageResponse.setResponse(false, HttpStatus.CONFLICT,
                 "Ya existe un registro con ese valor único");
     }
 
-    private ResponseEntity<Object> noEncontrado() {
+    private <T> ResponseEntity<T> noEncontrado() {
         return MessageResponse.setResponse(false, HttpStatus.NOT_FOUND,
                 "No se encontró el registro");
     }
