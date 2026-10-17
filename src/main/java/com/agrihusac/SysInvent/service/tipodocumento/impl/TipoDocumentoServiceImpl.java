@@ -49,7 +49,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
 
     @Override
     protected Page<TipoDocumentoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
     protected boolean estaActivo(TipoDocumentoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(TipoDocumentoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(TipoDocumentoRequest request) {
         return null;
     }
 }
