@@ -1,13 +1,22 @@
 package com.agrihusac.SysInvent.model.response.unidadmedida;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
-public record UnidadMedidaResponse(
-        Integer unidadMedidaId,
-        String nombre,
-        String descripcion,
-        Boolean activo,
-        @JsonFormat(pattern = "dd/MM/yyyy")
-        LocalDate fechaRegistro
-) {}
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UnidadMedidaResponse {
+    private Integer unidadMedidaId;
+    private String nombre;
+    private String descripcion;
+    private Boolean activo;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate fechaRegistro;
+}
