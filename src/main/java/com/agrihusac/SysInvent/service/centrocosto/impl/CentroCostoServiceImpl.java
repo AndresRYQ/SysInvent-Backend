@@ -49,7 +49,7 @@ public class CentroCostoServiceImpl extends AbstractCatalogoService<CentroCostoE
 
     @Override
     protected Page<CentroCostoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
