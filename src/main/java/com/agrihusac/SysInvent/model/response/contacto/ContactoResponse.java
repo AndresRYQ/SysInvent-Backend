@@ -1,5 +1,6 @@
 package com.agrihusac.SysInvent.model.response.contacto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 public record ContactoResponse(
@@ -10,5 +11,6 @@ public record ContactoResponse(
         String telefono,
         String correo,
         Boolean activo,
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate fechaRegistro
 ) {}

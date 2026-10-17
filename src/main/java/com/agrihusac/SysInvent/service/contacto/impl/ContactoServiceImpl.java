@@ -59,7 +59,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected Page<ContactoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreCompletoContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreCompletoContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
