@@ -49,7 +49,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
 
     @Override
     protected Page<TipoDocumentoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override

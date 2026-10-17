@@ -105,7 +105,7 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         entity = repository.saveAndFlush(entity);
         String estado = activo ? "activado" : "desactivado";
         return MessageResponse.setResponse(true, HttpStatus.OK,
-                nombreCatalogo() + " " + estado + " correctamente", respuesta(entity));
+                nombreCatalogo() + " " + estado + " correctamente");
     }
 
     private boolean activo(E entity) {
