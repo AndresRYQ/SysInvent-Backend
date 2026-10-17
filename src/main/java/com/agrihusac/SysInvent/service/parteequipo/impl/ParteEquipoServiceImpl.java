@@ -51,7 +51,7 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
 
     @Override
     protected Page<ParteEquipoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
