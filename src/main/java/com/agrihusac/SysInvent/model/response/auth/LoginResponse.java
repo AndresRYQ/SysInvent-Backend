@@ -1,8 +1,7 @@
 package com.agrihusac.SysInvent.model.response.auth;
 
 /**
- * Describes the response currently produced by MessageResponse for a successful login.
- * Existing login controller responses are not changed to use this DTO.
+ * Typed response returned by the login endpoint.
  */
 public record LoginResponse(boolean success, String message, int status, String data) {
 }

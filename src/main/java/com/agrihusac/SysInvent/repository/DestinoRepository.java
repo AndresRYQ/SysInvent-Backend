@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DestinoRepository extends JpaRepository<DestinoEntity, Integer> {
+    Page<DestinoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
     Page<DestinoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
     boolean existsByNombreIgnoreCase(String value);
     boolean existsByNombreIgnoreCaseAndDestinoIdNot(String value, Integer id);

@@ -6,6 +6,7 @@ import com.agrihusac.SysInvent.model.entity.RolEntity;
 import com.agrihusac.SysInvent.model.entity.RolModuloEntity;
 import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
 import com.agrihusac.SysInvent.model.request.LoginRequest;
+import com.agrihusac.SysInvent.model.response.auth.LoginResponse;
 import com.agrihusac.SysInvent.repository.ModuloRepository;
 import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.repository.RolModuloRepository;
@@ -13,7 +14,6 @@ import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import com.agrihusac.SysInvent.service.JwtService;
 import com.agrihusac.SysInvent.service.LoginService;
-import com.agrihusac.SysInvent.utils.MessageResponse;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -43,11 +43,13 @@ public class LoginServiceImpl implements LoginService {
     private final JwtService jwtService;
 
     @Override
-    public ResponseEntity<Object> login(LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(LoginRequest request) {
         UsuarioEntity usuario = usuarioRepository.findByUsuarioAndActivoTrue(request.getUsuario()).orElse(null);
 
         if (usuario == null || !passwordEncoder.matches(request.getContrasena(), usuario.getContrasena())) {
-            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.UNAUTHORIZED, MSG_CREDENCIALES_INVALIDAS);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(false, MSG_CREDENCIALES_INVALIDAS,
+                            HttpStatus.UNAUTHORIZED.value(), null));
         }
 
         List<Integer> rolesIds = usuarioRolRepository.findAllByUsuarioIdAndActivoTrue(usuario.getUsuarioId())
@@ -114,7 +116,8 @@ public class LoginServiceImpl implements LoginService {
         }
 
         String token = jwtService.generateToken(usuario, roles, modulos);
-        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_LOGIN_CORRECTO, token);
+        return ResponseEntity.ok(new LoginResponse(true, MSG_LOGIN_CORRECTO,
+                HttpStatus.OK.value(), token));
     }
 
     private List<ModuloEntity> obtenerModulosAsignados(List<RolModuloEntity> relacionesRolModulo) {
