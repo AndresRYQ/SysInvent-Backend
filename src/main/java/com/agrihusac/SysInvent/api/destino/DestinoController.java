@@ -35,10 +35,6 @@ public class DestinoController {
         return service.listar(nombre, pageable);
     }
 
-    @GetMapping("/{id}")
-    @Operation(operationId = "obtenerDestino", summary = "Obtener destino por ID")
-    public ResponseEntity<MessageResponse> obtenerDestino(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
-
     @PostMapping
     @Operation(operationId = "registrarDestino", summary = "Registrar destino")
     public ResponseEntity<MessageResponse> registrarDestino(@Valid @RequestBody DestinoRequest request) { return service.crear(request); }
@@ -48,10 +44,6 @@ public class DestinoController {
     public ResponseEntity<MessageResponse> actualizarDestino(@PathVariable @Min(1) Integer id, @Valid @RequestBody DestinoRequest request) {
         return service.actualizar(id, request);
     }
-
-    @DeleteMapping("/{id}")
-    @Operation(operationId = "desactivarDestino", summary = "Desactivar destino")
-    public ResponseEntity<MessageResponse> desactivarDestino(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
 
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoDestino", summary = "Cambiar estado del destino")
