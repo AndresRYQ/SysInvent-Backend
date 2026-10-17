@@ -49,7 +49,7 @@ public class TipoProductoServiceImpl extends AbstractCatalogoService<TipoProduct
 
     @Override
     protected Page<TipoProductoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
