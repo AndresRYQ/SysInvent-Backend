@@ -71,9 +71,9 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         }
         E entity = result.get();
         actualizarEntidad(entity, request);
-        entity = repository.saveAndFlush(entity);
+        repository.saveAndFlush(entity);
         return MessageResponse.setResponse(true, HttpStatus.OK,
-                nombreCatalogo() + " actualizado correctamente", respuesta(entity));
+                nombreCatalogo() + " actualizado correctamente");
     }
 
     @Override

@@ -49,7 +49,7 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
 
     @Override
     protected Page<UnidadMedidaEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
