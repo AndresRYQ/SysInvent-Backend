@@ -1,5 +1,6 @@
 package com.agrihusac.SysInvent.model.response.catalogo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 
 public record CategoriaCatalogoResponse(
@@ -7,5 +8,6 @@ public record CategoriaCatalogoResponse(
         String nombre,
         String descripcion,
         Boolean activo,
+        @JsonFormat(pattern = "dd/MM/yyyy")
         LocalDate fechaRegistro) {
 }
