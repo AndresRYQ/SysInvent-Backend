@@ -1,6 +1,7 @@
 package com.agrihusac.SysInvent.service;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -38,5 +39,13 @@ public class JwtService {
                 .setExpiration(expiration)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    public Claims validateToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
