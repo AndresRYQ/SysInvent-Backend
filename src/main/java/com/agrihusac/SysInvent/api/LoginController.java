@@ -4,6 +4,7 @@ import com.agrihusac.SysInvent.model.request.LoginRequest;
 import com.agrihusac.SysInvent.model.response.auth.LoginResponse;
 import com.agrihusac.SysInvent.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;

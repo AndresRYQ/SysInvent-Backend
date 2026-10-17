@@ -1,9 +1,11 @@
 package com.agrihusac.SysInvent.api;
 
+import com.agrihusac.SysInvent.model.request.ActualizarRolRequest;
 import com.agrihusac.SysInvent.model.request.RolRequest;
 import com.agrihusac.SysInvent.model.response.RolResponse;
 import com.agrihusac.SysInvent.service.RolService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,14 +45,21 @@ public class RolController {
 
     @PostMapping
     @Operation(summary = "Registrar rol", description = "Registra un nuevo rol")
-    public ResponseEntity<Object> registrarRol(@Valid @RequestBody RolRequest request) {
+    public ResponseEntity<MessageResponse> registrarRol(@Valid @RequestBody RolRequest request) {
         return rolService.registrarRol(request);
     }
 
+    @PutMapping
+    @Operation(summary = "Actualizar rol", description = "Actualiza el rol y sus módulos asociados")
+    public ResponseEntity<MessageResponse> actualizarRol(@Valid @RequestBody ActualizarRolRequest request) {
+        return rolService.actualizarRol(request);
+    }
+
     @DeleteMapping
-    @Operation(summary = "Desactivar rol", description = "Desactiva un rol por su identificador")
-    public ResponseEntity<Object> desactivarRol(
-            @NotNull(message = "{message.required}") @RequestParam("rolId") Integer rolId) {
-        return rolService.desactivarRol(rolId);
+    @Operation(summary = "Actualizar estado del rol", description = "Activa o desactiva un rol")
+    public ResponseEntity<MessageResponse> actualizarEstadoRol(
+            @NotNull(message = "{message.required}") @RequestParam("rolId") Integer rolId,
+            @NotNull(message = "{message.required}") @RequestParam("activo") Boolean activo) {
+        return rolService.actualizarEstadoRol(rolId, activo);
     }
 }

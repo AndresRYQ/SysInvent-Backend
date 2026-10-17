@@ -26,22 +26,30 @@ public class JwtService {
         this.expirationMilliseconds = expirationMilliseconds;
     }
 
-    public String generateToken(UsuarioEntity usuario, List<Map<String, Object>> roles) {
+    public String generateToken(UsuarioEntity usuario,
+                               List<Map<String, Object>> roles,
+                               List<Map<String, Object>> modulos) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationMilliseconds);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setSubject(usuario.getUsuario())
                 .claim("usuarioId", usuario.getUsuarioId())
                 .claim("email", usuario.getEmail())
                 .claim("roles", roles)
                 .setIssuedAt(issuedAt)
-                .setExpiration(expiration)
+                .setExpiration(expiration);
+
+        if (!modulos.isEmpty()) {
+            builder.claim("modulos", modulos);
+        }
+
+        return builder
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public Claims validateToken(String token) {
+    public Claims parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

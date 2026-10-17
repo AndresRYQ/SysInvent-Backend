@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@WithMockUser(username = "test-user")
 class CatalogosIntegrationTest {
 
     @Autowired
@@ -120,5 +122,11 @@ class CatalogosIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(contactPayload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.proveedorId").value(proveedorId));
+    }
+
+    @Test
+    void rolesCanBeListedWithJpaQuery() throws Exception {
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk());
     }
 }

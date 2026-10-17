@@ -7,7 +7,9 @@ import org.springframework.lang.Nullable;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Getter;
 
+@Getter
 public class MessageResponse {
 
     private final boolean success;
