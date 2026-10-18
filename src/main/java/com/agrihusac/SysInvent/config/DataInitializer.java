@@ -7,6 +7,9 @@ import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataInitializer.class);
     private static final String ADMIN_USER = "admin";
-    private static final String ADMIN_PASSWORD = "admin123";
     private static final String ADMIN_ROLE = "ADMIN";
 
     private final UsuarioRepository usuarioRepository;
@@ -26,10 +29,18 @@ public class DataInitializer implements CommandLineRunner {
     private final UsuarioRolRepository usuarioRolRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${initial-admin.password:}")
+    private String initialAdminPassword;
+
     @Override
     @Transactional
     public void run(String... args) {
         if (usuarioRepository.findByUsuarioAndActivoTrue(ADMIN_USER).isPresent()) {
+            return;
+        }
+
+        if (initialAdminPassword == null || initialAdminPassword.isBlank()) {
+            LOGGER.warn("Initial admin creation skipped: INITIAL_ADMIN_PASSWORD is not configured");
             return;
         }
 
@@ -46,7 +57,7 @@ public class DataInitializer implements CommandLineRunner {
                 .apeMaterno("Local")
                 .dni("00000000")
                 .email("admin@local.test")
-                .contrasena(passwordEncoder.encode(ADMIN_PASSWORD))
+                .contrasena(passwordEncoder.encode(initialAdminPassword))
                 .activo(Boolean.TRUE)
                 .build());
 

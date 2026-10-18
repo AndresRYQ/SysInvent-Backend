@@ -1,9 +1,11 @@
 package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.LoginRequest;
+import com.agrihusac.SysInvent.model.response.auth.LoginResponse;
 import com.agrihusac.SysInvent.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +23,9 @@ public class LoginController {
     private final LoginService loginService;
 
     @PostMapping
+    @SecurityRequirements
     @Operation(summary = "Iniciar sesión", description = "Valida las credenciales del usuario")
-    public ResponseEntity<Object> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return loginService.login(request);
     }
 }

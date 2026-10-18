@@ -59,7 +59,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected Page<ContactoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreCompletoContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreCompletoContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     protected boolean estaActivo(ContactoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ContactoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ContactoRequest request) {
         if (proveedorRepository.findById(request.proveedorId())
                 .filter(proveedor -> Boolean.TRUE.equals(proveedor.getActivo())).isEmpty()) {
             return MessageResponse.setResponse(false, HttpStatus.NOT_FOUND, "No se encontro un proveedor activo con ese id");

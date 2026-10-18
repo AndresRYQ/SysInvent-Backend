@@ -356,6 +356,41 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID(N'dbo.kardex_movimiento', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.kardex_movimiento (
+        kardex_movimiento_id BIGINT IDENTITY(1,1) NOT NULL,
+        vale_consumo_id INT NOT NULL,
+        producto_id INT NOT NULL,
+        tipo_movimiento VARCHAR(30) NOT NULL,
+        fecha_movimiento DATETIME2(0) NOT NULL,
+        cantidad DECIMAL(18,4) NOT NULL,
+        saldo_anterior DECIMAL(18,4) NOT NULL,
+        saldo_nuevo DECIMAL(18,4) NOT NULL,
+        precio_unitario DECIMAL(18,4) NOT NULL,
+        centro_costo_id INT NOT NULL,
+        destino_id INT NULL,
+        parte_equipo_id INT NULL,
+        numero_documento VARCHAR(30) NOT NULL,
+        CONSTRAINT pk_kardex_movimiento PRIMARY KEY (kardex_movimiento_id),
+        CONSTRAINT fk_kardex_vale FOREIGN KEY (vale_consumo_id)
+            REFERENCES dbo.vale_consumo (vale_consumo_id),
+        CONSTRAINT fk_kardex_producto FOREIGN KEY (producto_id)
+            REFERENCES dbo.producto (producto_id),
+        CONSTRAINT fk_kardex_centro_costo FOREIGN KEY (centro_costo_id)
+            REFERENCES dbo.centro_costo (centro_costo_id),
+        CONSTRAINT fk_kardex_destino FOREIGN KEY (destino_id)
+            REFERENCES dbo.destino (destino_id),
+        CONSTRAINT fk_kardex_parte_equipo FOREIGN KEY (parte_equipo_id)
+            REFERENCES dbo.parte_equipo (parte_equipo_id),
+        CONSTRAINT ck_kardex_tipo_movimiento CHECK
+            (tipo_movimiento IN ('SALIDA_VALE', 'AJUSTE_SALIDA', 'AJUSTE_ENTRADA', 'ANULACION_ENTRADA')),
+        CONSTRAINT ck_kardex_cantidad CHECK (cantidad > 0),
+        CONSTRAINT ck_kardex_saldos CHECK (saldo_anterior >= 0 AND saldo_nuevo >= 0)
+    );
+END;
+GO
+
 IF OBJECT_ID(N'dbo.bitacora', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.bitacora (
@@ -416,3 +451,80 @@ BEGIN
 END;
 GO
 
+/* ============================================================
+   MÓDULOS DISPONIBLES EN LA APLICACIÓN
+   ============================================================ */
+
+INSERT INTO dbo.modulo (fecha_registro, activo, nombre, ruta)
+SELECT CAST(SYSDATETIME() AS DATE), 1, catalogo.nombre, catalogo.ruta
+FROM (VALUES
+    ('Roles', '/roles'),
+    ('Usuarios', '/usuarios'),
+    ('Tipos de producto', '/tipos-producto'),
+    ('Proveedores', '/proveedores'),
+    ('Tipos de documento', '/tipos-documento'),
+    ('Destinos', '/destinos'),
+    ('Productos', '/productos'),
+    ('Unidades de medida', '/unidades-medida'),
+    ('Categorías', '/categorias'),
+    ('Centros de costo', '/centros-costos'),
+    ('Bitácora', '/bitacora'),
+    ('Reporte de ingresos', '/reportes/ingresos'),
+    ('Reporte de vales', '/reportes/vales'),
+    ('Productos más pedidos', '/reportes/productos-mas-pedidos'),
+    ('Contactos', '/contactos'),
+    ('Partes de equipo', '/partes-equipo'),
+    ('Control de almacén', '/control-almacen'),
+    ('Vales de consumo', '/vales-consumo'),
+    ('Ingresos de almacén', '/ingresos-almacen'),
+    ('Perfil de usuario', '/perfil')
+) AS catalogo(nombre, ruta)
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.modulo modulo_existente
+    WHERE modulo_existente.nombre = catalogo.nombre
+);
+GO
+
+/* ============================================================
+   DATOS INICIALES
+   ============================================================ */
+
+INSERT INTO dbo.rol (fecha_registro, activo, nombre, descripcion)
+SELECT CAST(SYSDATETIME() AS DATE), 1, 'ADMINISTRADOR', 'Rol con acceso completo al sistema'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.rol rol_existente
+    WHERE rol_existente.nombre = 'ADMINISTRADOR'
+);
+GO
+
+INSERT INTO dbo.usuario (
+    fecha_registro,
+    activo,
+    usuario,
+    nombres,
+    ape_paterno,
+    ape_materno,
+    dni,
+    codigo,
+    email,
+    contrasena
+)
+SELECT
+    CAST(SYSDATETIME() AS DATE),
+    1,
+    '71477205',
+    'Carlos Jesus',
+    'Chinchay',
+    'Pecho',
+    '71477205',
+    'USR001',
+    'carlos@yopmail.com',
+    '$2a$10$Efa0BQyjCWDzNwwTwzcs6.6A2sceUD4fDCZXqDuDYbAjmX4HXlNjK'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.usuario usuario_existente
+    WHERE usuario_existente.usuario = '71477205'
+);
+GO

@@ -1,10 +1,13 @@
-package com.agrihusac.SysInvent.api.tipodocumento;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.tipodocumento.TipoDocumentoRequest;
 import com.agrihusac.SysInvent.model.request.tipodocumento.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.response.tipodocumento.TipoDocumentoResponse;
 import com.agrihusac.SysInvent.service.tipodocumento.TipoDocumentoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,32 +22,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/catalogos/tipos-documento")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Tipos de documento", description = "Operaciones de tipos de documento")
 public class TipoDocumentoController {
     private final TipoDocumentoService service;
 
     @GetMapping
-    public CustomPage<TipoDocumentoResponse> listar(@RequestParam(value = "nombre", required = false) String nombre,
+    @Operation(operationId = "listarTiposDocumento", summary = "Listar tipos de documento")
+    public CustomPage<TipoDocumentoResponse> listarTiposDocumento(@RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
             @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
         return service.listar(nombre, pageable);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> obtener(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
-
     @PostMapping
-    public ResponseEntity<Object> crear(@Valid @RequestBody TipoDocumentoRequest request) { return service.crear(request); }
+    @Operation(operationId = "registrarTipoDocumento", summary = "Registrar tipo de documento")
+    public ResponseEntity<MessageResponse> registrarTipoDocumento(@Valid @RequestBody TipoDocumentoRequest request) { return service.crear(request); }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable @Min(1) Integer id, @Valid @RequestBody TipoDocumentoRequest request) {
+    @Operation(operationId = "actualizarTipoDocumento", summary = "Actualizar tipo de documento")
+    public ResponseEntity<MessageResponse> actualizarTipoDocumento(@PathVariable @Min(1) Integer id, @Valid @RequestBody TipoDocumentoRequest request) {
         return service.actualizar(id, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> desactivar(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
-
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Object> cambiarEstado(@PathVariable @Min(1) Integer id,
+    @Operation(operationId = "cambiarEstadoTipoDocumento", summary = "Cambiar estado del tipo de documento")
+    public ResponseEntity<MessageResponse> cambiarEstadoTipoDocumento(@PathVariable @Min(1) Integer id,
             @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
 }

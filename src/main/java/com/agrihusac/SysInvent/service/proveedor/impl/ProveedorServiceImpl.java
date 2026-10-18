@@ -55,7 +55,7 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
 
     @Override
     protected Page<ProveedorEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndRazonSocialContainingIgnoreCase(filtro, pageable);
+        return repository.findByRazonSocialContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
     protected boolean estaActivo(ProveedorEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ProveedorRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ProveedorRequest request) {
         return null;
     }
 }

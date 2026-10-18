@@ -5,6 +5,9 @@ import com.agrihusac.SysInvent.model.request.contacto.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.response.contacto.ContactoResponse;
 import com.agrihusac.SysInvent.service.contacto.ContactoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -19,32 +22,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/catalogos/contactos")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Contactos", description = "Operaciones de contactos")
 public class ContactoController {
     private final ContactoService service;
 
     @GetMapping
-    public CustomPage<ContactoResponse> listar(@RequestParam(value = "nombre", required = false) String nombre,
+    @Operation(operationId = "listarContactos", summary = "Listar contactos")
+    public CustomPage<ContactoResponse> listarContactos(@RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
             @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
         return service.listar(nombre, pageable);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Object> obtener(@PathVariable @Min(1) Integer id) { return service.obtener(id); }
-
     @PostMapping
-    public ResponseEntity<Object> crear(@Valid @RequestBody ContactoRequest request) { return service.crear(request); }
+    @Operation(operationId = "registrarContacto", summary = "Registrar contacto")
+    public ResponseEntity<MessageResponse> registrarContacto(@Valid @RequestBody ContactoRequest request) { return service.crear(request); }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> actualizar(@PathVariable @Min(1) Integer id, @Valid @RequestBody ContactoRequest request) {
+    @Operation(operationId = "actualizarContacto", summary = "Actualizar contacto")
+    public ResponseEntity<MessageResponse> actualizarContacto(@PathVariable @Min(1) Integer id, @Valid @RequestBody ContactoRequest request) {
         return service.actualizar(id, request);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> desactivar(@PathVariable @Min(1) Integer id) { return service.cambiarEstado(id, false); }
-
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Object> cambiarEstado(@PathVariable @Min(1) Integer id,
+    @Operation(operationId = "cambiarEstadoContacto", summary = "Cambiar estado del contacto")
+    public ResponseEntity<MessageResponse> cambiarEstadoContacto(@PathVariable @Min(1) Integer id,
             @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
 }
