@@ -8,6 +8,7 @@ import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
 import com.agrihusac.SysInvent.repository.ProveedorRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.contacto.ContactoService;
+import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +61,15 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     @Override
     protected Page<ContactoEntity> buscarActivos(String filtro, Pageable pageable) {
         return repository.findByNombreCompletoContainingIgnoreCase(filtro, pageable);
+    }
+
+    @Override
+    public CustomPage<ContactoResponse> listarPorProveedor(String filtro, Integer proveedorId, Pageable pageable) {
+        String texto = filtro == null ? "" : filtro.trim();
+        Page<ContactoResponse> page = repository
+                .findByProveedorProveedorIdAndActivoTrueAndNombreCompletoContainingIgnoreCase(proveedorId, texto, pageable)
+                .map(this::respuesta);
+        return new CustomPage<>(page);
     }
 
     @Override

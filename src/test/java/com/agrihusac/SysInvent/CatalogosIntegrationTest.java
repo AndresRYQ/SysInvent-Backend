@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -122,6 +123,11 @@ class CatalogosIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(contactPayload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.proveedorId").value(proveedorId));
+
+        mockMvc.perform(get("/api/v1/catalogos/contactos").param("proveedorId", String.valueOf(proveedorId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos[0].proveedorId").value(proveedorId))
+                .andExpect(jsonPath("$.datos", hasSize(1)));
     }
 
     @Test
