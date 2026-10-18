@@ -50,9 +50,9 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         if (duplicado(request, null)) {
             return conflicto();
         }
-        repository.saveAndFlush(crearEntidad(request));
+        E saved = repository.saveAndFlush(crearEntidad(request));
         return MessageResponse.setResponse(true, HttpStatus.CREATED,
-                nombreCatalogo() + " registrado correctamente");
+                nombreCatalogo() + " registrado correctamente", respuesta(saved));
     }
 
     @Override
@@ -71,9 +71,9 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         }
         E entity = result.get();
         actualizarEntidad(entity, request);
-        repository.saveAndFlush(entity);
+        entity = repository.saveAndFlush(entity);
         return MessageResponse.setResponse(true, HttpStatus.OK,
-                nombreCatalogo() + " actualizado correctamente");
+                nombreCatalogo() + " actualizado correctamente", respuesta(entity));
     }
 
     @Override
@@ -105,7 +105,7 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
         entity = repository.saveAndFlush(entity);
         String estado = activo ? "activado" : "desactivado";
         return MessageResponse.setResponse(true, HttpStatus.OK,
-                nombreCatalogo() + " " + estado + " correctamente");
+                nombreCatalogo() + " " + estado + " correctamente", respuesta(entity));
     }
 
     private boolean activo(E entity) {

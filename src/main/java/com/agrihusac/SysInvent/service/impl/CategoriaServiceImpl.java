@@ -67,7 +67,7 @@ public class CategoriaServiceImpl extends
 
     @Override
     protected Page<CategoriaEntity> buscarActivos(String filtro, Pageable pageable) {
-        return categoriaRepository.findByNombreContainingIgnoreCase(filtro, pageable);
+        return categoriaRepository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override

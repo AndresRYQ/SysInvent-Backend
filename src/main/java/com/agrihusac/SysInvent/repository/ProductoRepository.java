@@ -1,6 +1,8 @@
 package com.agrihusac.SysInvent.repository;
 
 import com.agrihusac.SysInvent.model.entity.ProductoEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -29,4 +31,10 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
             """)
     int incrementarStock(@Param("productoId") Integer productoId,
                          @Param("cantidad") BigDecimal cantidad);
+
+    Page<ProductoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
+    Page<ProductoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
+    boolean existsByCodigoIgnoreCase(String codigo);
+    boolean existsByCodigoIgnoreCaseAndProductoIdNot(String codigo, Integer productoId);
 }

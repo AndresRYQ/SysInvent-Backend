@@ -53,7 +53,13 @@ public class CategoriaCatalogoController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoCategoria", summary = "Cambiar estado de categoría")
     public ResponseEntity<MessageResponse> cambiarEstadoCategoria(@PathVariable @Min(1) Integer id,
-                                                @Valid @RequestBody EstadoCatalogoRequest request) {
+                                                 @Valid @RequestBody EstadoCatalogoRequest request) {
         return service.cambiarEstado(id, request.activo());
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(operationId = "eliminarCategoria", summary = "Desactivar categoría")
+    public ResponseEntity<MessageResponse> eliminarCategoria(@PathVariable @Min(1) Integer id) {
+        return service.cambiarEstado(id, false);
     }
 }
