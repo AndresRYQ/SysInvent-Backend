@@ -117,7 +117,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
 
     @Override
     protected Page<ProductoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro == null ? "" : filtro.trim(), pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro == null ? "" : filtro.trim(), pageable);
     }
 
     @Override

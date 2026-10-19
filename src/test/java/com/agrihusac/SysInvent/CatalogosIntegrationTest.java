@@ -202,6 +202,11 @@ class CatalogosIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.activo").value(false));
 
+        mockMvc.perform(get("/api/v1/catalogos/productos").param("nombre", "Producto editado"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos[0].productoId").value(productoId))
+                .andExpect(jsonPath("$.datos[0].activo").value(false));
+
         mockMvc.perform(put("/api/v1/catalogos/productos/{id}/estado", productoId)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"activo\":true}"))
                 .andExpect(status().isOk())
