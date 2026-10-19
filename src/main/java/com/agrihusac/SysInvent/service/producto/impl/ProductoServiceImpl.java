@@ -15,6 +15,7 @@ import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.producto.ProductoService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -102,7 +103,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
                 normalizar(entity.getStockMinimo()),
                 normalizar(entity.getPrecioUnitario()),
                 entity.getActivo(),
-                entity.getFechaRegistro()
+                FechaUtils.formatear(entity.getFechaRegistro())
         );
     }
 

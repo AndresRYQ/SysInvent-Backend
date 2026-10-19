@@ -1,9 +1,6 @@
 package com.agrihusac.SysInvent.model.response.producto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public record ProductoResponse(
         Integer productoId,
@@ -22,6 +19,5 @@ public record ProductoResponse(
         BigDecimal stockMinimo,
         BigDecimal precioUnitario,
         Boolean activo,
-        @JsonFormat(pattern = "dd/MM/yyyy")
-        LocalDate fechaRegistro
+        String fechaRegistro
 ) {}

@@ -10,6 +10,7 @@ import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.contacto.ContactoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -50,7 +51,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected ContactoResponse respuesta(ContactoEntity entity) {
-        return new ContactoResponse(entity.getContactoId(), entity.getProveedor().getProveedorId(), entity.getNombreCompleto(), entity.getCargo(), entity.getTelefono(), entity.getCorreo(), entity.getActivo(), entity.getFechaRegistro());
+        return new ContactoResponse(entity.getContactoId(), entity.getProveedor().getProveedorId(), entity.getNombreCompleto(), entity.getCargo(), entity.getTelefono(), entity.getCorreo(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
