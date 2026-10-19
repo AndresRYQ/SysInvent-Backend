@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.ingreso;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.ingreso.IngresoAlmacenService;
 import lombok.RequiredArgsConstructor;

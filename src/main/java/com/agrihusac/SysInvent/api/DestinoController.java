@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.destino;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.destino.DestinoRequest;
 import com.agrihusac.SysInvent.model.request.destino.EstadoCatalogoRequest;

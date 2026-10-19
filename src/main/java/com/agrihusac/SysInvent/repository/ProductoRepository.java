@@ -9,8 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface ProductoRepository extends JpaRepository<ProductoEntity, Integer> {
+    List<ProductoEntity> findAllByActivoTrueOrderByNombreAsc();
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""

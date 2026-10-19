@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.producto;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.catalogo.EstadoCatalogoRequest;
 import com.agrihusac.SysInvent.model.request.producto.ProductoRequest;

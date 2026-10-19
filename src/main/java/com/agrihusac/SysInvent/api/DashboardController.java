@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.dashboard;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.dashboard.DashboardService;
 import lombok.RequiredArgsConstructor;
