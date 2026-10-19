@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/catalogos/categorias")
-@RequiredArgsConstructor
 @Validated
 @Tag(name = "Categorías", description = "Operaciones de categorías")
 public class CategoriaCatalogoController {
 
     private final CategoriaService service;
+
+    public CategoriaCatalogoController(CategoriaService service) {
+        this.service = service;
+    }
 
     @GetMapping
     @Operation(operationId = "listarCategoriasCatalogo", summary = "Listar categorías")

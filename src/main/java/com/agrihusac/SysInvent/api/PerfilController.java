@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.perfil;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.perfil.PerfilService;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.contacto;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.contacto.ContactoRequest;
 import com.agrihusac.SysInvent.model.request.contacto.EstadoCatalogoRequest;

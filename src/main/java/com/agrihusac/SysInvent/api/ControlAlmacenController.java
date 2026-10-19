@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.almacen;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.almacen.ControlAlmacenService;
 import lombok.RequiredArgsConstructor;

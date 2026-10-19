@@ -7,6 +7,7 @@ import com.agrihusac.SysInvent.repository.ProveedorRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.proveedor.ProveedorService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -45,7 +46,7 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
 
     @Override
     protected ProveedorResponse respuesta(ProveedorEntity entity) {
-        return new ProveedorResponse(entity.getProveedorId(), entity.getRuc(), entity.getRazonSocial(), entity.getCorreo(), entity.getTelefono(), entity.getDireccion(), entity.getActivo(), entity.getFechaRegistro());
+        return new ProveedorResponse(entity.getProveedorId(), entity.getRuc(), entity.getRazonSocial(), entity.getCorreo(), entity.getTelefono(), entity.getDireccion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.parteequipo;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.parteequipo.ParteEquipoRequest;
 import com.agrihusac.SysInvent.model.request.parteequipo.EstadoCatalogoRequest;

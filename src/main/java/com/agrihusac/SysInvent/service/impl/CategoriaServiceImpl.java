@@ -10,6 +10,7 @@ import com.agrihusac.SysInvent.repository.CategoriaRepository;
 import com.agrihusac.SysInvent.service.CategoriaService;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +56,7 @@ public class CategoriaServiceImpl extends
     @Override
     protected CategoriaCatalogoResponse respuesta(CategoriaEntity entity) {
         return new CategoriaCatalogoResponse(entity.getCategoriaId(), entity.getNombre(),
-                entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+                entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override

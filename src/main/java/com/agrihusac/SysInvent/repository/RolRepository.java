@@ -13,6 +13,8 @@ import org.springframework.data.web.PageableDefault;
 
 public interface RolRepository extends JpaRepository<RolEntity, Integer> {
 
+    List<RolEntity> findAllByActivoTrueOrderByNombreAsc();
+
     List<RolEntity> findAllByRolIdInAndActivoTrue(Collection<Integer> rolesIds);
 
     @Query(value = """

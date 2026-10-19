@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.valeconsumo;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.valeconsumo.ValeConsumoRequest;
 import com.agrihusac.SysInvent.service.valeconsumo.ValeConsumoService;

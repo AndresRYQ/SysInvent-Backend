@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.proveedor;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.proveedor.ProveedorRequest;
 import com.agrihusac.SysInvent.model.request.proveedor.EstadoCatalogoRequest;
