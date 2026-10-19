@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ContactoRepository extends JpaRepository<ContactoEntity, Integer> {
     Page<ContactoEntity> findByNombreCompletoContainingIgnoreCase(String filtro, Pageable pageable);
     Page<ContactoEntity> findByActivoTrueAndNombreCompletoContainingIgnoreCase(String filtro, Pageable pageable);
+    Page<ContactoEntity> findByProveedorProveedorIdAndActivoTrueAndNombreCompletoContainingIgnoreCase(Integer proveedorId, String filtro, Pageable pageable);
 }

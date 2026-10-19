@@ -7,6 +7,7 @@ import com.agrihusac.SysInvent.repository.TipoDocumentoRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.tipodocumento.TipoDocumentoService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
 
     @Override
     protected TipoDocumentoResponse respuesta(TipoDocumentoEntity entity) {
-        return new TipoDocumentoResponse(entity.getTipoDocumentoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+        return new TipoDocumentoResponse(entity.getTipoDocumentoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override

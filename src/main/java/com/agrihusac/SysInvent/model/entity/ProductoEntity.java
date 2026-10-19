@@ -33,6 +33,9 @@ public class ProductoEntity extends AuditoriaEntity {
     @Column(name = "nombre", nullable = false, length = 255)
     private String nombre;
 
+    @Column(name = "descripcion", length = 255)
+    private String descripcion;
+
     @Column(name = "tipo_producto_id", nullable = false)
     private Integer tipoProductoId;
 

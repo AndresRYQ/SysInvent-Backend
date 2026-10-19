@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/catalogos/categorias")
-@RequiredArgsConstructor
 @Validated
 @Tag(name = "Categorías", description = "Operaciones de categorías")
 public class CategoriaCatalogoController {
 
     private final CategoriaService service;
+
+    public CategoriaCatalogoController(CategoriaService service) {
+        this.service = service;
+    }
 
     @GetMapping
     @Operation(operationId = "listarCategoriasCatalogo", summary = "Listar categorías")
@@ -53,7 +55,13 @@ public class CategoriaCatalogoController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoCategoria", summary = "Cambiar estado de categoría")
     public ResponseEntity<MessageResponse> cambiarEstadoCategoria(@PathVariable @Min(1) Integer id,
-                                                @Valid @RequestBody EstadoCatalogoRequest request) {
+                                                 @Valid @RequestBody EstadoCatalogoRequest request) {
         return service.cambiarEstado(id, request.activo());
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(operationId = "eliminarCategoria", summary = "Desactivar categoría")
+    public ResponseEntity<MessageResponse> eliminarCategoria(@PathVariable @Min(1) Integer id) {
+        return service.cambiarEstado(id, false);
     }
 }

@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.permiso;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.permiso.PermisoService;
 import lombok.RequiredArgsConstructor;

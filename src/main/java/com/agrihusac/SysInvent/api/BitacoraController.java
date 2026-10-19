@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.bitacora;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.bitacora.BitacoraService;
 import lombok.RequiredArgsConstructor;
