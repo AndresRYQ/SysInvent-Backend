@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public interface ProductoRepository extends JpaRepository<ProductoEntity, Integer> {
+
     List<ProductoEntity> findAllByActivoTrueOrderByNombreAsc();
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
@@ -35,8 +36,10 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
                          @Param("cantidad") BigDecimal cantidad);
 
     Page<ProductoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
     Page<ProductoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
 
     boolean existsByCodigoIgnoreCase(String codigo);
+
     boolean existsByCodigoIgnoreCaseAndProductoIdNot(String codigo, Integer productoId);
 }

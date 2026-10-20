@@ -1,7 +1,19 @@
 package com.agrihusac.SysInvent.model.request.ingreso;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import java.math.BigDecimal;
 
-/** Opaque placeholder; detail fields await the approved frontend contract. */
-public record DetalleIngresoAlmacenRequest(JsonNode payload) {
-}
+public record DetalleIngresoAlmacenRequest(
+        @NotNull(message = "El producto es obligatorio")
+        @Min(value = 1, message = "El producto es obligatorio")
+        Integer productoId,
+        @NotNull(message = "La cantidad es obligatoria")
+        @Positive(message = "La cantidad debe ser mayor que cero")
+        BigDecimal cantidad,
+        @NotNull(message = "El precio unitario es obligatorio")
+        @PositiveOrZero(message = "El precio unitario no puede ser negativo")
+        BigDecimal precioUnitario
+) {}
