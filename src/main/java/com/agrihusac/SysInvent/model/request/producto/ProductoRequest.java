@@ -29,7 +29,6 @@ public record ProductoRequest(
         @NotNull(message = "El proveedor es obligatorio")
         @Positive(message = "El proveedor debe ser válido")
         Integer proveedorId,
-        @NotNull(message = "El stock actual es obligatorio")
         @DecimalMin(value = "0.0000", inclusive = true, message = "El stock actual no puede ser negativo")
         BigDecimal stockActual,
         @NotNull(message = "El stock mínimo es obligatorio")

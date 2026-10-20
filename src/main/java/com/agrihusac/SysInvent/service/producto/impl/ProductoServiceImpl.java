@@ -23,9 +23,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity, ProductoRequest, ProductoResponse> implements ProductoService {
+    private static final String MSG_STOCK_DEBE_INGRESARSE =
+            "El stock debe registrarse mediante un ingreso de almacén.";
+    private static final BigDecimal STOCK_INICIAL = BigDecimal.ZERO.setScale(4);
+
     private final ProductoRepository repository;
     private final TipoProductoRepository tipoProductoRepository;
     private final CategoriaRepository categoriaRepository;
@@ -46,6 +51,25 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
     }
 
     @Override
+    public ResponseEntity<MessageResponse> crear(ProductoRequest request) {
+        if (stockDifiere(request.stockActual(), STOCK_INICIAL)) {
+            return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST, MSG_STOCK_DEBE_INGRESARSE);
+        }
+        return super.crear(request);
+    }
+
+    @Override
+    public ResponseEntity<MessageResponse> actualizar(Integer id, ProductoRequest request) {
+        Optional<ProductoEntity> existente = repository.findById(id);
+        if (existente.isPresent()
+                && request.stockActual() != null
+                && stockDifiere(request.stockActual(), existente.get().getStockActual())) {
+            return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST, MSG_STOCK_DEBE_INGRESARSE);
+        }
+        return super.actualizar(id, request);
+    }
+
+    @Override
     protected ProductoEntity crearEntidad(ProductoRequest request) {
         ProductoEntity entity = new ProductoEntity();
         entity.setCodigo(request.codigo().trim());
@@ -55,7 +79,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         entity.setCategoriaId(request.categoriaId());
         entity.setUnidadMedidaId(request.unidadMedidaId());
         entity.setProveedorId(request.proveedorId());
-        entity.setStockActual(normalizar(request.stockActual()));
+        entity.setStockActual(STOCK_INICIAL);
         entity.setStockMinimo(normalizar(request.stockMinimo()));
         entity.setPrecioUnitario(normalizar(request.precioUnitario()));
         entity.setActivo(true);
@@ -71,7 +95,6 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         entity.setCategoriaId(request.categoriaId());
         entity.setUnidadMedidaId(request.unidadMedidaId());
         entity.setProveedorId(request.proveedorId());
-        entity.setStockActual(normalizar(request.stockActual()));
         entity.setStockMinimo(normalizar(request.stockMinimo()));
         entity.setPrecioUnitario(normalizar(request.precioUnitario()));
     }
@@ -159,5 +182,9 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
     private BigDecimal normalizar(BigDecimal valor) {
         if (valor == null) return BigDecimal.ZERO.setScale(4);
         return valor.setScale(4, java.math.RoundingMode.UNNECESSARY);
+    }
+
+    private boolean stockDifiere(BigDecimal solicitado, BigDecimal existente) {
+        return solicitado != null && solicitado.compareTo(existente) != 0;
     }
 }
