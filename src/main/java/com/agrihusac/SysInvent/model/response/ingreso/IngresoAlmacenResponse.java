@@ -1,5 +1,7 @@
 package com.agrihusac.SysInvent.model.response.ingreso;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -20,4 +22,9 @@ public record IngresoAlmacenResponse(
         String estado,
         BigDecimal total,
         List<DetalleIngresoAlmacenResponse> detalles
-) {}
+) {
+    @JsonProperty("id")
+    public Integer id() {
+        return ingresoAlmacenId;
+    }
+}

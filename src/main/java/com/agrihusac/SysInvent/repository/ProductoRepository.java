@@ -1,19 +1,26 @@
 package com.agrihusac.SysInvent.repository;
 
 import com.agrihusac.SysInvent.model.entity.ProductoEntity;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductoRepository extends JpaRepository<ProductoEntity, Integer> {
 
     List<ProductoEntity> findAllByActivoTrueOrderByNombreAsc();
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from ProductoEntity p where p.productoId = :productoId")
+    Optional<ProductoEntity> buscarParaActualizar(@Param("productoId") Integer productoId);
 
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""

@@ -1,15 +1,20 @@
 package com.agrihusac.SysInvent.model.entity;
 
-import jakarta.persistence.*;
-import java.math.BigDecimal;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * El esquema actual de detalle_ingreso_almacen no incluye columnas de
- * auditoria, por lo que esta entidad no extiende AuditoriaEntity.
- */
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "detalle_ingreso_almacen")
 @Getter

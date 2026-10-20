@@ -10,5 +10,7 @@ public record DetalleIngresoAlmacenResponse(
         String unidadMedida,
         BigDecimal cantidad,
         BigDecimal precioUnitario,
-        BigDecimal subtotal
-) {}
+        BigDecimal subtotal,
+        BigDecimal stockResultante
+) {
+}

@@ -135,6 +135,7 @@ class ValeConsumoIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.estado").value("REGISTRADO"))
                 .andExpect(jsonPath("$.data.movimientosKardex[0].tipoMovimiento").value("SALIDA_VALE"))
+                .andExpect(jsonPath("$.data.movimientosKardex[0].usuarioResponsable").value("test-user"))
                 .andReturn().getResponse().getContentAsString();
 
         int valeId = objectMapper.readTree(createResponse).path("data").path("id").asInt();
