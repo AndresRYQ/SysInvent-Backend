@@ -70,7 +70,7 @@ public class ComunController {
     @Operation(summary = "Listar tipos de producto activos")
     public List<ComunResponse> tiposProducto() {
         return tipoProductoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getTipoProductoId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getTipoProductoId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -78,7 +78,7 @@ public class ComunController {
     @Operation(summary = "Listar categorías activas")
     public List<ComunResponse> categorias() {
         return categoriaRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getCategoriaId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getCategoriaId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -86,7 +86,7 @@ public class ComunController {
     @Operation(summary = "Listar unidades de medida activas")
     public List<ComunResponse> unidadesMedida() {
         return unidadMedidaRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getUnidadMedidaId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getUnidadMedidaId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -94,7 +94,7 @@ public class ComunController {
     @Operation(summary = "Listar proveedores activos")
     public List<ComunResponse> proveedores() {
         return proveedorRepository.findAllByActivoTrueOrderByRazonSocialAsc().stream()
-                .map(item -> new ComunResponse(item.getProveedorId(), item.getRazonSocial()))
+                .map(item -> new ComunResponse(item.getProveedorId(), item.getRazonSocial(), null))
                 .toList();
     }
 
@@ -102,7 +102,7 @@ public class ComunController {
     @Operation(summary = "Listar contactos activos por proveedor")
     public List<ComunResponse> contactos(@RequestParam("proveedorId") @Min(1) Integer proveedorId) {
         return contactoRepository.findByProveedorProveedorIdAndActivoTrueOrderByNombreCompletoAsc(proveedorId).stream()
-                .map(item -> new ComunResponse(item.getContactoId(), item.getNombreCompleto()))
+                .map(item -> new ComunResponse(item.getContactoId(), item.getNombreCompleto(), null))
                 .toList();
     }
 
@@ -110,7 +110,7 @@ public class ComunController {
     @Operation(summary = "Listar roles activos")
     public List<ComunResponse> roles() {
         return rolRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getRolId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getRolId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -118,15 +118,19 @@ public class ComunController {
     @Operation(summary = "Listar centros de costo activos")
     public List<ComunResponse> centrosCosto() {
         return centroCostoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getCentroCostoId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getCentroCostoId(), item.getNombre(), null))
                 .toList();
     }
 
     @GetMapping("/productos")
-    @Operation(summary = "Listar productos activos")
-    public List<ComunResponse> productos() {
-        return productoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getProductoId(), item.getNombre()))
+    @Operation(summary = "Listar productos activos por tipo y proveedor")
+    public List<ComunResponse> productos(
+            @RequestParam("tipoProductoId") @Min(1) Integer tipoProductoId,
+            @RequestParam("proveedorId") @Min(1) Integer proveedorId) {
+        return productoRepository.findProductosParaCombo(
+                        tipoProductoId, proveedorId).stream()
+                .map(item -> new ComunResponse(item.getProductoId(), item.getNombre(),
+                        item.getUnidadMedida().getNombre()))
                 .toList();
     }
 
@@ -134,7 +138,7 @@ public class ComunController {
     @Operation(summary = "Listar destinos activos")
     public List<ComunResponse> destinos() {
         return destinoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getDestinoId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getDestinoId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -142,7 +146,7 @@ public class ComunController {
     @Operation(summary = "Listar partes de equipo activas")
     public List<ComunResponse> partesEquipo() {
         return parteEquipoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getParteEquipoId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getParteEquipoId(), item.getNombre(), null))
                 .toList();
     }
 
@@ -150,7 +154,7 @@ public class ComunController {
     @Operation(summary = "Listar tipos de documento activos")
     public List<ComunResponse> tiposDocumento() {
         return tipoDocumentoRepository.findAllByActivoTrueOrderByNombreAsc().stream()
-                .map(item -> new ComunResponse(item.getTipoDocumentoId(), item.getNombre()))
+                .map(item -> new ComunResponse(item.getTipoDocumentoId(), item.getNombre(), null))
                 .toList();
     }
 }

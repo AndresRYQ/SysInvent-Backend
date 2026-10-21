@@ -3,6 +3,7 @@ package com.agrihusac.SysInvent.service.ingreso.impl;
 import com.agrihusac.SysInvent.model.entity.ContactoEntity;
 import com.agrihusac.SysInvent.model.entity.DetalleIngresoAlmacenEntity;
 import com.agrihusac.SysInvent.model.entity.IngresoAlmacenEntity;
+import com.agrihusac.SysInvent.model.entity.KardexMovimientoEntity;
 import com.agrihusac.SysInvent.model.entity.ProductoEntity;
 import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
 import com.agrihusac.SysInvent.model.entity.TipoDocumentoEntity;
@@ -14,6 +15,7 @@ import com.agrihusac.SysInvent.model.response.ingreso.IngresoAlmacenListadoRespo
 import com.agrihusac.SysInvent.model.projection.IngresoAlmacenListadoProjection;
 import com.agrihusac.SysInvent.repository.ContactoRepository;
 import com.agrihusac.SysInvent.repository.IngresoAlmacenRepository;
+import com.agrihusac.SysInvent.repository.KardexMovimientoRepository;
 import com.agrihusac.SysInvent.repository.ProductoRepository;
 import com.agrihusac.SysInvent.repository.ProveedorRepository;
 import com.agrihusac.SysInvent.repository.TipoDocumentoRepository;
@@ -23,6 +25,8 @@ import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -33,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -52,9 +58,11 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
     private static final String MSG_TIPO_DOCUMENTO_NO_ENCONTRADO = "El tipo de documento no existe o esta inactivo";
     private static final String MSG_DOCUMENTO_DUPLICADO = "Ya existe un ingreso registrado con ese documento de origen";
     private static final String MSG_PRODUCTO_NO_ENCONTRADO = "Uno o mas productos no existen o estan inactivos";
+    private static final String ENTRADA_INGRESO = "ENTRADA_INGRESO";
     private static final BigDecimal ZERO = BigDecimal.ZERO.setScale(4);
 
     private final IngresoAlmacenRepository ingresoAlmacenRepository;
+    private final KardexMovimientoRepository kardexMovimientoRepository;
     private final ProveedorRepository proveedorRepository;
     private final ContactoRepository contactoRepository;
     private final TipoDocumentoRepository tipoDocumentoRepository;
@@ -117,6 +125,10 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
         ingreso.setNumeroIngreso(String.format("ING-%06d", ingreso.getIngresoAlmacenId()));
         ingreso = ingresoAlmacenRepository.saveAndFlush(ingreso);
 
+        List<KardexMovimientoEntity> movimientos = new ArrayList<>();
+        String usuarioResponsable = usuarioActual();
+        LocalDateTime fechaMovimiento = LocalDateTime.now();
+
         for (DetalleIngresoAlmacenEntity detalle : ingreso.getDetalles()) {
             ProductoEntity producto = productos.get(detalle.getProducto().getProductoId());
             BigDecimal saldoAnterior = normalizar(producto.getStockActual());
@@ -126,9 +138,23 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
             producto.setStockActual(saldoNuevo);
             producto.setPrecioUnitario(normalizar(detalle.getPrecioUnitario()));
             productoRepository.save(producto);
+
+            KardexMovimientoEntity movimiento = new KardexMovimientoEntity();
+            movimiento.setIngresoAlmacenId(ingreso.getIngresoAlmacenId());
+            movimiento.setProductoId(producto.getProductoId());
+            movimiento.setUsuarioResponsable(usuarioResponsable);
+            movimiento.setTipoMovimiento(ENTRADA_INGRESO);
+            movimiento.setFechaMovimiento(fechaMovimiento);
+            movimiento.setCantidad(cantidad);
+            movimiento.setSaldoAnterior(saldoAnterior);
+            movimiento.setSaldoNuevo(saldoNuevo);
+            movimiento.setPrecioUnitario(normalizar(detalle.getPrecioUnitario()));
+            movimiento.setNumeroDocumento(ingreso.getNumeroIngreso());
+            movimientos.add(movimiento);
         }
 
-        log.info("Ingreso de almacen {} registrado con {} detalle(s); Kardex omitido temporalmente",
+        kardexMovimientoRepository.saveAll(movimientos);
+        log.info("Ingreso de almacen {} registrado con {} detalle(s) y movimientos Kardex",
                 ingreso.getNumeroIngreso(), ingreso.getDetalles().size());
 
         return MessageResponse.setResponse(true, HttpStatus.CREATED, MSG_REGISTRADO);
@@ -212,5 +238,12 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
 
     private BigDecimal normalizar(BigDecimal valor) {
         return valor == null ? ZERO : valor.setScale(4, RoundingMode.HALF_UP);
+    }
+
+    private String usuarioActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null || authentication.getName() == null
+                ? "sistema"
+                : authentication.getName();
     }
 }

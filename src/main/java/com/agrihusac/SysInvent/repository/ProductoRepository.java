@@ -18,6 +18,17 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
 
     List<ProductoEntity> findAllByActivoTrueOrderByNombreAsc();
 
+    @Query("""
+            select p from ProductoEntity p
+            join fetch p.unidadMedida
+            where p.activo = true
+              and p.tipoProductoId = :tipoProductoId
+              and p.proveedorId = :proveedorId
+            order by p.nombre asc
+            """)
+    List<ProductoEntity> findProductosParaCombo(@Param("tipoProductoId") Integer tipoProductoId,
+                                                @Param("proveedorId") Integer proveedorId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from ProductoEntity p where p.productoId = :productoId")
     Optional<ProductoEntity> buscarParaActualizar(@Param("productoId") Integer productoId);
