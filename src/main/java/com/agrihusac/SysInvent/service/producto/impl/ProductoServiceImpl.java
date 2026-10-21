@@ -23,12 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity, ProductoRequest, ProductoResponse> implements ProductoService {
-    private static final String MSG_STOCK_DEBE_INGRESARSE =
-            "El stock debe registrarse mediante un ingreso de almacén.";
     private static final BigDecimal STOCK_INICIAL = BigDecimal.ZERO.setScale(4);
 
     private final ProductoRepository repository;
@@ -48,25 +45,6 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         this.categoriaRepository = categoriaRepository;
         this.unidadMedidaRepository = unidadMedidaRepository;
         this.proveedorRepository = proveedorRepository;
-    }
-
-    @Override
-    public ResponseEntity<MessageResponse> crear(ProductoRequest request) {
-        if (stockDifiere(request.stockActual(), STOCK_INICIAL)) {
-            return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST, MSG_STOCK_DEBE_INGRESARSE);
-        }
-        return super.crear(request);
-    }
-
-    @Override
-    public ResponseEntity<MessageResponse> actualizar(Integer id, ProductoRequest request) {
-        Optional<ProductoEntity> existente = repository.findById(id);
-        if (existente.isPresent()
-                && request.stockActual() != null
-                && stockDifiere(request.stockActual(), existente.get().getStockActual())) {
-            return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST, MSG_STOCK_DEBE_INGRESARSE);
-        }
-        return super.actualizar(id, request);
     }
 
     @Override
@@ -184,7 +162,4 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         return valor.setScale(4, java.math.RoundingMode.UNNECESSARY);
     }
 
-    private boolean stockDifiere(BigDecimal solicitado, BigDecimal existente) {
-        return solicitado != null && solicitado.compareTo(existente) != 0;
-    }
 }

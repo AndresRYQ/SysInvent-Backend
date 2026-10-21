@@ -3,7 +3,6 @@ package com.agrihusac.SysInvent.service.ingreso.impl;
 import com.agrihusac.SysInvent.model.entity.ContactoEntity;
 import com.agrihusac.SysInvent.model.entity.DetalleIngresoAlmacenEntity;
 import com.agrihusac.SysInvent.model.entity.IngresoAlmacenEntity;
-import com.agrihusac.SysInvent.model.entity.KardexMovimientoEntity;
 import com.agrihusac.SysInvent.model.entity.ProductoEntity;
 import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
 import com.agrihusac.SysInvent.model.entity.TipoDocumentoEntity;
@@ -11,9 +10,10 @@ import com.agrihusac.SysInvent.model.request.ingreso.DetalleIngresoAlmacenReques
 import com.agrihusac.SysInvent.model.request.ingreso.IngresoAlmacenRequest;
 import com.agrihusac.SysInvent.model.response.ingreso.DetalleIngresoAlmacenResponse;
 import com.agrihusac.SysInvent.model.response.ingreso.IngresoAlmacenResponse;
+import com.agrihusac.SysInvent.model.response.ingreso.IngresoAlmacenListadoResponse;
+import com.agrihusac.SysInvent.model.projection.IngresoAlmacenListadoProjection;
 import com.agrihusac.SysInvent.repository.ContactoRepository;
 import com.agrihusac.SysInvent.repository.IngresoAlmacenRepository;
-import com.agrihusac.SysInvent.repository.KardexMovimientoRepository;
 import com.agrihusac.SysInvent.repository.ProductoRepository;
 import com.agrihusac.SysInvent.repository.ProveedorRepository;
 import com.agrihusac.SysInvent.repository.TipoDocumentoRepository;
@@ -27,16 +27,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -56,11 +52,9 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
     private static final String MSG_TIPO_DOCUMENTO_NO_ENCONTRADO = "El tipo de documento no existe o esta inactivo";
     private static final String MSG_DOCUMENTO_DUPLICADO = "Ya existe un ingreso registrado con ese documento de origen";
     private static final String MSG_PRODUCTO_NO_ENCONTRADO = "Uno o mas productos no existen o estan inactivos";
-    private static final String ENTRADA_INGRESO = "ENTRADA_INGRESO";
     private static final BigDecimal ZERO = BigDecimal.ZERO.setScale(4);
 
     private final IngresoAlmacenRepository ingresoAlmacenRepository;
-    private final KardexMovimientoRepository kardexMovimientoRepository;
     private final ProveedorRepository proveedorRepository;
     private final ContactoRepository contactoRepository;
     private final TipoDocumentoRepository tipoDocumentoRepository;
@@ -123,11 +117,6 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
         ingreso.setNumeroIngreso(String.format("ING-%06d", ingreso.getIngresoAlmacenId()));
         ingreso = ingresoAlmacenRepository.saveAndFlush(ingreso);
 
-        Map<Integer, BigDecimal> stockPorDetalle = new HashMap<>();
-        List<KardexMovimientoEntity> movimientos = new ArrayList<>();
-        String usuarioResponsable = usuarioActual();
-        LocalDateTime fechaMovimiento = LocalDateTime.now();
-
         for (DetalleIngresoAlmacenEntity detalle : ingreso.getDetalles()) {
             ProductoEntity producto = productos.get(detalle.getProducto().getProductoId());
             BigDecimal saldoAnterior = normalizar(producto.getStockActual());
@@ -137,28 +126,12 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
             producto.setStockActual(saldoNuevo);
             producto.setPrecioUnitario(normalizar(detalle.getPrecioUnitario()));
             productoRepository.save(producto);
-            stockPorDetalle.put(detalle.getDetalleIngresoAlmacenId(), saldoNuevo);
-
-            KardexMovimientoEntity movimiento = new KardexMovimientoEntity();
-            movimiento.setIngresoAlmacenId(ingreso.getIngresoAlmacenId());
-            movimiento.setProductoId(producto.getProductoId());
-            movimiento.setUsuarioResponsable(usuarioResponsable);
-            movimiento.setTipoMovimiento(ENTRADA_INGRESO);
-            movimiento.setFechaMovimiento(fechaMovimiento);
-            movimiento.setCantidad(cantidad);
-            movimiento.setSaldoAnterior(saldoAnterior);
-            movimiento.setSaldoNuevo(saldoNuevo);
-            movimiento.setPrecioUnitario(normalizar(detalle.getPrecioUnitario()));
-            movimiento.setNumeroDocumento(ingreso.getNumeroIngreso());
-            movimientos.add(movimiento);
         }
 
-        kardexMovimientoRepository.saveAll(movimientos);
-        log.info("Ingreso de almacen {} registrado con {} detalle(s) y movimientos Kardex",
+        log.info("Ingreso de almacen {} registrado con {} detalle(s); Kardex omitido temporalmente",
                 ingreso.getNumeroIngreso(), ingreso.getDetalles().size());
 
-        return MessageResponse.setResponse(true, HttpStatus.CREATED, MSG_REGISTRADO,
-                respuesta(ingreso, stockPorDetalle));
+        return MessageResponse.setResponse(true, HttpStatus.CREATED, MSG_REGISTRADO);
     }
 
     @Override
@@ -172,12 +145,26 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<IngresoAlmacenResponse> listar(String numeroIngreso, Pageable pageable) {
-        String filtro = numeroIngreso == null ? "" : numeroIngreso.trim();
-        Page<IngresoAlmacenResponse> page = ingresoAlmacenRepository
-                .findByNumeroIngresoContainingIgnoreCase(filtro, pageable)
-                .map(ingreso -> respuesta(ingreso, Map.of()));
+    public CustomPage<IngresoAlmacenListadoResponse> listar(String busqueda, Integer proveedorId,
+                                                            String estado, LocalDate fechaDesde,
+                                                            LocalDate fechaHasta, Pageable pageable) {
+        Page<IngresoAlmacenListadoResponse> page = ingresoAlmacenRepository
+                .listarResumen(normalizarFiltro(busqueda), proveedorId, normalizarFiltro(estado),
+                        fechaDesde, fechaHasta, pageable)
+                .map(this::respuestaListado);
         return new CustomPage<>(page);
+    }
+
+    private IngresoAlmacenListadoResponse respuestaListado(IngresoAlmacenListadoProjection projection) {
+        return new IngresoAlmacenListadoResponse(
+                projection.getIngresoAlmacenId(), projection.getNumeroIngreso(),
+                projection.getFechaIngreso(), projection.getProveedor(), projection.getContacto(),
+                projection.getDocumento(), projection.getProductos(), projection.getCantidadIngresada(),
+                projection.getTotal(), projection.getEstado());
+    }
+
+    private String normalizarFiltro(String valor) {
+        return valor == null ? "" : valor.trim();
     }
 
     private IngresoAlmacenResponse respuesta(
@@ -221,13 +208,6 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
                 detalle.getCantidad().multiply(detalle.getPrecioUnitario()),
                 stockPorDetalle.getOrDefault(
                         detalle.getDetalleIngresoAlmacenId(), normalizar(producto.getStockActual())));
-    }
-
-    private String usuarioActual() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication == null || authentication.getName() == null
-                ? "sistema"
-                : authentication.getName();
     }
 
     private BigDecimal normalizar(BigDecimal valor) {

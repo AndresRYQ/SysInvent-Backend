@@ -1,6 +1,7 @@
 package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.response.ComunResponse;
+import com.agrihusac.SysInvent.repository.ContactoRepository;
 import com.agrihusac.SysInvent.repository.CategoriaRepository;
 import com.agrihusac.SysInvent.repository.CentroCostoRepository;
 import com.agrihusac.SysInvent.repository.DestinoRepository;
@@ -13,18 +14,23 @@ import com.agrihusac.SysInvent.repository.TipoProductoRepository;
 import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/comun")
+@Validated
 @Tag(name = "Combos comunes", description = "Listas activas para combos")
 public class ComunController {
 
     private final CategoriaRepository categoriaRepository;
+    private final ContactoRepository contactoRepository;
     private final CentroCostoRepository centroCostoRepository;
     private final DestinoRepository destinoRepository;
     private final ParteEquipoRepository parteEquipoRepository;
@@ -37,6 +43,7 @@ public class ComunController {
 
     public ComunController(
             CategoriaRepository categoriaRepository,
+            ContactoRepository contactoRepository,
             CentroCostoRepository centroCostoRepository,
             DestinoRepository destinoRepository,
             ParteEquipoRepository parteEquipoRepository,
@@ -47,6 +54,7 @@ public class ComunController {
             TipoProductoRepository tipoProductoRepository,
             UnidadMedidaRepository unidadMedidaRepository) {
         this.categoriaRepository = categoriaRepository;
+        this.contactoRepository = contactoRepository;
         this.centroCostoRepository = centroCostoRepository;
         this.destinoRepository = destinoRepository;
         this.parteEquipoRepository = parteEquipoRepository;
@@ -87,6 +95,14 @@ public class ComunController {
     public List<ComunResponse> proveedores() {
         return proveedorRepository.findAllByActivoTrueOrderByRazonSocialAsc().stream()
                 .map(item -> new ComunResponse(item.getProveedorId(), item.getRazonSocial()))
+                .toList();
+    }
+
+    @GetMapping("/contactos")
+    @Operation(summary = "Listar contactos activos por proveedor")
+    public List<ComunResponse> contactos(@RequestParam("proveedorId") @Min(1) Integer proveedorId) {
+        return contactoRepository.findByProveedorProveedorIdAndActivoTrueOrderByNombreCompletoAsc(proveedorId).stream()
+                .map(item -> new ComunResponse(item.getContactoId(), item.getNombreCompleto()))
                 .toList();
     }
 
