@@ -168,7 +168,7 @@ class CatalogosIntegrationTest {
         String productPayload = """
                 {"codigo":"%s","nombre":"Producto test","descripcion":"desc","tipoProductoId":%d,
                  "categoriaId":%d,"unidadMedidaId":%d,"proveedorId":%d,
-                 "stockActual":10,"stockMinimo":2,"precioUnitario":5.5}
+                 "stockMinimo":2,"precioUnitario":5.5}
                 """.formatted(codigo, tipoProductoId, categoriaId, unidadMedidaId, proveedorId);
 
         String productCreated = mockMvc.perform(post("/api/v1/catalogos/productos")
@@ -177,6 +177,7 @@ class CatalogosIntegrationTest {
                 .andExpect(jsonPath("$.data.codigo").value(codigo))
                 .andExpect(jsonPath("$.data.activo").value(true))
                 .andExpect(jsonPath("$.data.proveedorId").value(proveedorId))
+                .andExpect(jsonPath("$.data.stockActual").value(0))
                 .andReturn().getResponse().getContentAsString();
         int productoId = objectMapper.readTree(productCreated).path("data").path("productoId").asInt();
 
@@ -198,6 +199,10 @@ class CatalogosIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nombre").value("Producto editado"));
 
+        mockMvc.perform(get("/api/v1/catalogos/productos/{id}", productoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.stockActual").value(0));
+
         mockMvc.perform(delete("/api/v1/catalogos/productos/{id}", productoId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.activo").value(false));
@@ -215,7 +220,7 @@ class CatalogosIntegrationTest {
         String invalidReferencePayload = """
                 {"codigo":"%s","nombre":"Producto sin proveedor","tipoProductoId":%d,
                  "categoriaId":%d,"unidadMedidaId":%d,"proveedorId":999999,
-                 "stockActual":1,"stockMinimo":0,"precioUnitario":1}
+                 "stockMinimo":0,"precioUnitario":1}
                 """.formatted(codigo + "X", tipoProductoId, categoriaId, unidadMedidaId);
         mockMvc.perform(post("/api/v1/catalogos/productos")
                         .contentType(MediaType.APPLICATION_JSON).content(invalidReferencePayload))

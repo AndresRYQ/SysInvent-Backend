@@ -1,12 +1,18 @@
 package com.agrihusac.SysInvent;
 
 import com.agrihusac.SysInvent.model.entity.CentroCostoEntity;
+import com.agrihusac.SysInvent.model.entity.CategoriaEntity;
 import com.agrihusac.SysInvent.model.entity.DestinoEntity;
 import com.agrihusac.SysInvent.model.entity.ProductoEntity;
+import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
+import com.agrihusac.SysInvent.model.entity.TipoProductoEntity;
 import com.agrihusac.SysInvent.model.entity.UnidadMedidaEntity;
+import com.agrihusac.SysInvent.repository.CategoriaRepository;
 import com.agrihusac.SysInvent.repository.CentroCostoRepository;
 import com.agrihusac.SysInvent.repository.DestinoRepository;
 import com.agrihusac.SysInvent.repository.ProductoRepository;
+import com.agrihusac.SysInvent.repository.ProveedorRepository;
+import com.agrihusac.SysInvent.repository.TipoProductoRepository;
 import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +53,16 @@ class ValeConsumoIntegrationTest {
     private DestinoRepository destinoRepository;
 
     @Autowired
+    private TipoProductoRepository tipoProductoRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
     private UnidadMedidaRepository unidadMedidaRepository;
+
+    @Autowired
+    private ProveedorRepository proveedorRepository;
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -77,19 +92,35 @@ class ValeConsumoIntegrationTest {
         destino.setActivo(true);
         destinoId = destinoRepository.save(destino).getDestinoId();
 
+        TipoProductoEntity tipoProducto = new TipoProductoEntity();
+        tipoProducto.setNombre("Tipo " + sufijo);
+        tipoProducto.setActivo(true);
+        tipoProducto = tipoProductoRepository.save(tipoProducto);
+
+        CategoriaEntity categoria = new CategoriaEntity();
+        categoria.setNombre("Categoria " + sufijo);
+        categoria.setActivo(true);
+        categoria = categoriaRepository.save(categoria);
+
+        ProveedorEntity proveedor = new ProveedorEntity();
+        proveedor.setRuc(UUID.randomUUID().toString().replace("-", "").substring(0, 11));
+        proveedor.setRazonSocial("Proveedor " + sufijo);
+        proveedor.setActivo(true);
+        proveedor = proveedorRepository.save(proveedor);
+
         UnidadMedidaEntity unidad = new UnidadMedidaEntity();
         unidad.setNombre("Unidad " + sufijo);
         unidad.setActivo(true);
-        Integer unidadId = unidadMedidaRepository.save(unidad).getUnidadMedidaId();
+        unidad = unidadMedidaRepository.save(unidad);
 
         ProductoEntity producto = new ProductoEntity();
         producto.setActivo(true);
         producto.setCodigo(sufijo);
         producto.setNombre("Producto " + sufijo);
-        producto.setTipoProductoId(1);
-        producto.setCategoriaId(1);
-        producto.setUnidadMedidaId(unidadId);
-        producto.setProveedorId(1);
+        producto.setTipoProducto(tipoProducto);
+        producto.setCategoria(categoria);
+        producto.setUnidadMedida(unidad);
+        producto.setProveedor(proveedor);
         producto.setStockActual(new BigDecimal("5.0000"));
         producto.setStockMinimo(BigDecimal.ZERO);
         producto.setPrecioUnitario(new BigDecimal("10.0000"));
@@ -104,6 +135,7 @@ class ValeConsumoIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.estado").value("REGISTRADO"))
                 .andExpect(jsonPath("$.data.movimientosKardex[0].tipoMovimiento").value("SALIDA_VALE"))
+                .andExpect(jsonPath("$.data.movimientosKardex[0].usuarioResponsable").value("test-user"))
                 .andReturn().getResponse().getContentAsString();
 
         int valeId = objectMapper.readTree(createResponse).path("data").path("id").asInt();

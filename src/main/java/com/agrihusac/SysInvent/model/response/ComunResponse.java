@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,4 +12,5 @@ public class ComunResponse {
 
     private Integer id;
     private String descripcion;
+    private String value2;
 }

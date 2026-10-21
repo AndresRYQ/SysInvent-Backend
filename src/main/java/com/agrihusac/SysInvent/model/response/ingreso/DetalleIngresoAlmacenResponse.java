@@ -1,7 +1,16 @@
 package com.agrihusac.SysInvent.model.response.ingreso;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import java.math.BigDecimal;
 
-/** Opaque placeholder; detail fields await the approved frontend contract. */
-public record DetalleIngresoAlmacenResponse(JsonNode payload) {
+public record DetalleIngresoAlmacenResponse(
+        Integer detalleIngresoAlmacenId,
+        Integer productoId,
+        String codigoProducto,
+        String nombreProducto,
+        String unidadMedida,
+        BigDecimal cantidad,
+        BigDecimal precioUnitario,
+        BigDecimal subtotal,
+        BigDecimal stockResultante
+) {
 }

@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 
 @Service
 public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity, ProductoRequest, ProductoResponse> implements ProductoService {
+    private static final BigDecimal STOCK_INICIAL = BigDecimal.ZERO.setScale(4);
+
     private final ProductoRepository repository;
     private final TipoProductoRepository tipoProductoRepository;
     private final CategoriaRepository categoriaRepository;
@@ -55,7 +57,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         entity.setCategoriaId(request.categoriaId());
         entity.setUnidadMedidaId(request.unidadMedidaId());
         entity.setProveedorId(request.proveedorId());
-        entity.setStockActual(normalizar(request.stockActual()));
+        entity.setStockActual(STOCK_INICIAL);
         entity.setStockMinimo(normalizar(request.stockMinimo()));
         entity.setPrecioUnitario(normalizar(request.precioUnitario()));
         entity.setActivo(true);
@@ -71,7 +73,6 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         entity.setCategoriaId(request.categoriaId());
         entity.setUnidadMedidaId(request.unidadMedidaId());
         entity.setProveedorId(request.proveedorId());
-        entity.setStockActual(normalizar(request.stockActual()));
         entity.setStockMinimo(normalizar(request.stockMinimo()));
         entity.setPrecioUnitario(normalizar(request.precioUnitario()));
     }
@@ -160,4 +161,5 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
         if (valor == null) return BigDecimal.ZERO.setScale(4);
         return valor.setScale(4, java.math.RoundingMode.UNNECESSARY);
     }
+
 }

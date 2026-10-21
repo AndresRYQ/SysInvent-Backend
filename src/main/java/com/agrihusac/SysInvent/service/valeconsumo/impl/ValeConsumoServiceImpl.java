@@ -18,6 +18,8 @@ import com.agrihusac.SysInvent.model.response.valeconsumo.DetalleValeConsumoResp
 import com.agrihusac.SysInvent.model.response.valeconsumo.DistribucionValeConsumoResponse;
 import com.agrihusac.SysInvent.model.response.valeconsumo.KardexMovimientoResponse;
 import com.agrihusac.SysInvent.model.response.valeconsumo.ValeConsumoResponse;
+import com.agrihusac.SysInvent.model.response.valeconsumo.ValeConsumoListadoResponse;
+import com.agrihusac.SysInvent.model.projection.ValeConsumoListadoProjection;
 import com.agrihusac.SysInvent.repository.CentroCostoRepository;
 import com.agrihusac.SysInvent.repository.DestinoRepository;
 import com.agrihusac.SysInvent.repository.KardexMovimientoRepository;
@@ -26,14 +28,19 @@ import com.agrihusac.SysInvent.repository.ProductoRepository;
 import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
 import com.agrihusac.SysInvent.repository.ValeConsumoRepository;
 import com.agrihusac.SysInvent.utils.CustomNotFoundException;
+import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.service.valeconsumo.ValeConsumoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -66,11 +73,22 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ValeConsumoResponse> listar() {
-        return valeConsumoRepository.findAll(Sort.by(Sort.Direction.DESC, "valeConsumoId"))
-                .stream()
-                .map(this::convertir)
-                .toList();
+    public CustomPage<ValeConsumoListadoResponse> listar(String busqueda, Integer centroCostoId,
+                                                         String estado, LocalDate fechaDesde,
+                                                         LocalDate fechaHasta, Pageable pageable) {
+        Page<ValeConsumoListadoResponse> page = valeConsumoRepository.listarResumen(
+                        busqueda == null ? "" : busqueda.trim(), centroCostoId,
+                        estado == null ? "" : estado.trim(), fechaDesde, fechaHasta, pageable)
+                .map(this::convertirListado);
+        return new CustomPage<>(page);
+    }
+
+    private ValeConsumoListadoResponse convertirListado(ValeConsumoListadoProjection projection) {
+        return new ValeConsumoListadoResponse(
+                projection.getId(), projection.getNumeroVale(), projection.getFechaVale(),
+                projection.getCentroCosto(), projection.getSolicitante(), projection.getProductos(),
+                projection.getDestinos(), projection.getCantidadTotal(), projection.getTotal(),
+                projection.getEstado());
     }
 
     @Override
@@ -441,6 +459,7 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
     ) {
         KardexMovimientoEntity movimiento = new KardexMovimientoEntity();
         movimiento.setValeConsumoId(vale.getValeConsumoId());
+        movimiento.setUsuarioResponsable(usuarioActual());
         movimiento.setProductoId(productoId);
         movimiento.setTipoMovimiento(tipo);
         movimiento.setFechaMovimiento(LocalDateTime.now());
@@ -453,6 +472,13 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
         movimiento.setParteEquipoId(parteEquipoId);
         movimiento.setNumeroDocumento(vale.getNumeroVale());
         return movimiento;
+    }
+
+    private String usuarioActual() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication == null || authentication.getName() == null
+                ? "sistema"
+                : authentication.getName();
     }
 
     private ValeConsumoResponse convertir(ValeConsumoEntity vale) {
@@ -502,12 +528,21 @@ public class ValeConsumoServiceImpl implements ValeConsumoService {
                 .map(movimiento -> new KardexMovimientoResponse(
                         movimiento.getKardexMovimientoId(),
                         movimiento.getProductoId(),
+                        productoRepository.findById(movimiento.getProductoId())
+                            .map(ProductoEntity::getCodigo).orElse(null),
+                        productoRepository.findById(movimiento.getProductoId())
+                            .map(ProductoEntity::getNombre).orElse(null),
                         movimiento.getTipoMovimiento(),
                         movimiento.getFechaMovimiento(),
                         movimiento.getCantidad(),
                         movimiento.getSaldoAnterior(),
                         movimiento.getSaldoNuevo(),
                         movimiento.getPrecioUnitario(),
+                        movimiento.getUsuarioResponsable(),
+                        movimiento.getNumeroDocumento(),
+                        movimiento.getIngresoAlmacenId(),
+                        movimiento.getValeConsumoId(),
+                        movimiento.getCentroCostoId(),
                         movimiento.getDestinoId(),
                         movimiento.getParteEquipoId()
                 ))
