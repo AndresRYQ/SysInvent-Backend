@@ -1,6 +1,8 @@
 package com.agrihusac.SysInvent.repository;
 
 import com.agrihusac.SysInvent.model.entity.KardexMovimientoEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,8 @@ import java.util.List;
 
 public interface KardexMovimientoRepository extends JpaRepository<KardexMovimientoEntity, Long> {
     List<KardexMovimientoEntity> findByValeConsumoIdOrderByKardexMovimientoIdAsc(Integer valeConsumoId);
+    Page<KardexMovimientoEntity> findByProductoIdOrderByFechaMovimientoAscKardexMovimientoIdAsc(
+            Integer productoId, Pageable pageable);
 
         @Query("""
                         select movimiento from KardexMovimientoEntity movimiento
