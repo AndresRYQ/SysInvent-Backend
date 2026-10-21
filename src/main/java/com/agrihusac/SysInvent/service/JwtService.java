@@ -40,6 +40,10 @@ public class JwtService {
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration);
 
+        if (roles.size() == 1 && roles.get(0).get("rolId") != null) {
+            builder.claim("rolId", roles.get(0).get("rolId"));
+        }
+
         if (!modulos.isEmpty()) {
             builder.claim("modulos", modulos);
         }

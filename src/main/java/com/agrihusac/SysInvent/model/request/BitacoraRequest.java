@@ -1,7 +1,6 @@
 package com.agrihusac.SysInvent.model.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -16,9 +15,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BitacoraRequest {
-    @NotNull(message = "El rol es obligatorio")
-    private Integer rolId;
-
     @NotBlank(message = "El módulo es obligatorio")
     @Size(max = 100, message = "El módulo no puede superar los 100 caracteres")
     private String modulo;

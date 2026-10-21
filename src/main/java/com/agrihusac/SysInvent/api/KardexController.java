@@ -1,4 +1,4 @@
-package com.agrihusac.SysInvent.api.reporte;
+package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.service.reporte.KardexService;
 import com.agrihusac.SysInvent.utils.MessageResponse;

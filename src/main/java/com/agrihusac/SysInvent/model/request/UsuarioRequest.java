@@ -42,5 +42,6 @@ public class UsuarioRequest {
     private String contrasena;
 
     @NotEmpty(message = "{message.required}")
+    @Size(min = 1, max = 1, message = "El usuario debe tener exactamente un rol")
     private List<@NotNull(message = "{message.required}") Integer> rolesIds;
 }

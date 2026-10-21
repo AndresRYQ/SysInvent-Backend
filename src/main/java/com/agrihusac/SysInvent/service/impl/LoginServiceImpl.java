@@ -59,6 +59,13 @@ public class LoginServiceImpl implements LoginService {
                 .distinct()
                 .toList();
 
+        if (rolesIds.size() != 1) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new LoginResponse(false,
+                            "El usuario debe tener exactamente un rol activo",
+                            HttpStatus.FORBIDDEN.value(), null));
+        }
+
         List<RolEntity> rolesEntities = rolesIds.isEmpty()
                 ? List.of()
                 : rolRepository.findAllByRolIdInAndActivoTrue(rolesIds);
