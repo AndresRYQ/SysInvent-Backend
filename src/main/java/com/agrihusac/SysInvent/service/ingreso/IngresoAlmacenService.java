@@ -2,7 +2,9 @@ package com.agrihusac.SysInvent.service.ingreso;
 
 import com.agrihusac.SysInvent.model.request.ingreso.IngresoAlmacenRequest;
 import com.agrihusac.SysInvent.model.response.ingreso.IngresoAlmacenResponse;
+import com.agrihusac.SysInvent.model.response.ingreso.IngresoAlmacenListadoResponse;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import java.time.LocalDate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
@@ -12,5 +14,7 @@ public interface IngresoAlmacenService {
 
     ResponseEntity<Object> obtener(Integer id);
 
-    CustomPage<IngresoAlmacenResponse> listar(String numeroIngreso, Pageable pageable);
+    CustomPage<IngresoAlmacenListadoResponse> listar(String busqueda, Integer proveedorId,
+                                                      String estado, LocalDate fechaDesde,
+                                                      LocalDate fechaHasta, Pageable pageable);
 }

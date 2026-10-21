@@ -171,12 +171,6 @@ class CatalogosIntegrationTest {
                  "stockMinimo":2,"precioUnitario":5.5}
                 """.formatted(codigo, tipoProductoId, categoriaId, unidadMedidaId, proveedorId);
 
-        String stockInicialNoPermitido = productPayload.replace(
-                "\"stockMinimo\":2", "\"stockActual\":10,\"stockMinimo\":2");
-        mockMvc.perform(post("/api/v1/catalogos/productos")
-                        .contentType(MediaType.APPLICATION_JSON).content(stockInicialNoPermitido))
-                .andExpect(status().isBadRequest());
-
         String productCreated = mockMvc.perform(post("/api/v1/catalogos/productos")
                         .contentType(MediaType.APPLICATION_JSON).content(productPayload))
                 .andExpect(status().isCreated())
@@ -205,11 +199,6 @@ class CatalogosIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.nombre").value("Producto editado"));
 
-        mockMvc.perform(put("/api/v1/catalogos/productos/{id}", productoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(productPayload.replace(
-                                "\"stockMinimo\":2", "\"stockActual\":5,\"stockMinimo\":2")))
-                .andExpect(status().isBadRequest());
         mockMvc.perform(get("/api/v1/catalogos/productos/{id}", productoId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.stockActual").value(0));

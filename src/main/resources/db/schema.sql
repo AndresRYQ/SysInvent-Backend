@@ -398,39 +398,6 @@ BEGIN
 END;
 GO
 
-IF COL_LENGTH(N'dbo.kardex_movimiento', N'ingreso_almacen_id') IS NULL
-    ALTER TABLE dbo.kardex_movimiento ADD ingreso_almacen_id INT NULL;
-IF COL_LENGTH(N'dbo.kardex_movimiento', N'usuario_responsable') IS NULL
-BEGIN
-    ALTER TABLE dbo.kardex_movimiento ADD usuario_responsable VARCHAR(100) NULL;
-    UPDATE dbo.kardex_movimiento SET usuario_responsable = 'sistema' WHERE usuario_responsable IS NULL;
-    ALTER TABLE dbo.kardex_movimiento ALTER COLUMN usuario_responsable VARCHAR(100) NOT NULL;
-END;
-IF OBJECT_ID(N'dbo.fk_kardex_vale', N'F') IS NOT NULL
-    ALTER TABLE dbo.kardex_movimiento DROP CONSTRAINT fk_kardex_vale;
-IF OBJECT_ID(N'dbo.fk_kardex_centro_costo', N'F') IS NOT NULL
-    ALTER TABLE dbo.kardex_movimiento DROP CONSTRAINT fk_kardex_centro_costo;
-ALTER TABLE dbo.kardex_movimiento ALTER COLUMN vale_consumo_id INT NULL;
-ALTER TABLE dbo.kardex_movimiento ALTER COLUMN centro_costo_id INT NULL;
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'fk_kardex_vale')
-    ALTER TABLE dbo.kardex_movimiento ADD CONSTRAINT fk_kardex_vale
-        FOREIGN KEY (vale_consumo_id) REFERENCES dbo.vale_consumo (vale_consumo_id);
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'fk_kardex_centro_costo')
-    ALTER TABLE dbo.kardex_movimiento ADD CONSTRAINT fk_kardex_centro_costo
-        FOREIGN KEY (centro_costo_id) REFERENCES dbo.centro_costo (centro_costo_id);
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = N'fk_kardex_ingreso')
-    ALTER TABLE dbo.kardex_movimiento ADD CONSTRAINT fk_kardex_ingreso
-        FOREIGN KEY (ingreso_almacen_id) REFERENCES dbo.ingreso_almacen (ingreso_almacen_id);
-IF OBJECT_ID(N'dbo.ck_kardex_tipo_movimiento', N'C') IS NOT NULL
-    ALTER TABLE dbo.kardex_movimiento DROP CONSTRAINT ck_kardex_tipo_movimiento;
-ALTER TABLE dbo.kardex_movimiento ADD CONSTRAINT ck_kardex_tipo_movimiento CHECK
-    (tipo_movimiento IN ('ENTRADA_INGRESO', 'SALIDA_VALE', 'AJUSTE_SALIDA', 'AJUSTE_ENTRADA', 'ANULACION_ENTRADA'));
-IF OBJECT_ID(N'dbo.ck_kardex_documento', N'C') IS NULL
-    ALTER TABLE dbo.kardex_movimiento ADD CONSTRAINT ck_kardex_documento CHECK
-        ((vale_consumo_id IS NOT NULL AND ingreso_almacen_id IS NULL)
-         OR (vale_consumo_id IS NULL AND ingreso_almacen_id IS NOT NULL));
-GO
-
 CREATE OR ALTER TRIGGER dbo.tr_kardex_movimiento_inmutable
 ON dbo.kardex_movimiento
 AFTER UPDATE, DELETE
