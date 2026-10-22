@@ -356,6 +356,58 @@ BEGIN
 END;
 GO
 
+IF OBJECT_ID(N'dbo.kardex_movimiento', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.kardex_movimiento (
+        kardex_movimiento_id BIGINT IDENTITY(1,1) NOT NULL,
+        vale_consumo_id INT NULL,
+        ingreso_almacen_id INT NULL,
+        usuario_responsable VARCHAR(100) NOT NULL,
+        producto_id INT NOT NULL,
+        tipo_movimiento VARCHAR(30) NOT NULL,
+        fecha_movimiento DATETIME2(0) NOT NULL,
+        cantidad DECIMAL(18,4) NOT NULL,
+        saldo_anterior DECIMAL(18,4) NOT NULL,
+        saldo_nuevo DECIMAL(18,4) NOT NULL,
+        precio_unitario DECIMAL(18,4) NOT NULL,
+        centro_costo_id INT NULL,
+        destino_id INT NULL,
+        parte_equipo_id INT NULL,
+        numero_documento VARCHAR(30) NOT NULL,
+        CONSTRAINT pk_kardex_movimiento PRIMARY KEY (kardex_movimiento_id),
+        CONSTRAINT fk_kardex_vale FOREIGN KEY (vale_consumo_id)
+            REFERENCES dbo.vale_consumo (vale_consumo_id),
+        CONSTRAINT fk_kardex_ingreso FOREIGN KEY (ingreso_almacen_id)
+            REFERENCES dbo.ingreso_almacen (ingreso_almacen_id),
+        CONSTRAINT fk_kardex_producto FOREIGN KEY (producto_id)
+            REFERENCES dbo.producto (producto_id),
+        CONSTRAINT fk_kardex_centro_costo FOREIGN KEY (centro_costo_id)
+            REFERENCES dbo.centro_costo (centro_costo_id),
+        CONSTRAINT fk_kardex_destino FOREIGN KEY (destino_id)
+            REFERENCES dbo.destino (destino_id),
+        CONSTRAINT fk_kardex_parte_equipo FOREIGN KEY (parte_equipo_id)
+            REFERENCES dbo.parte_equipo (parte_equipo_id),
+        CONSTRAINT ck_kardex_tipo_movimiento CHECK
+            (tipo_movimiento IN ('ENTRADA_INGRESO', 'SALIDA_VALE', 'AJUSTE_SALIDA', 'AJUSTE_ENTRADA', 'ANULACION_ENTRADA')),
+        CONSTRAINT ck_kardex_documento CHECK
+            ((vale_consumo_id IS NOT NULL AND ingreso_almacen_id IS NULL)
+             OR (vale_consumo_id IS NULL AND ingreso_almacen_id IS NOT NULL)),
+        CONSTRAINT ck_kardex_cantidad CHECK (cantidad > 0),
+        CONSTRAINT ck_kardex_saldos CHECK (saldo_anterior >= 0 AND saldo_nuevo >= 0)
+    );
+END;
+GO
+
+CREATE OR ALTER TRIGGER dbo.tr_kardex_movimiento_inmutable
+ON dbo.kardex_movimiento
+AFTER UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    THROW 51000, 'Los movimientos de Kardex son inmutables.', 1;
+END;
+GO
+
 IF OBJECT_ID(N'dbo.bitacora', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.bitacora (
@@ -451,3 +503,45 @@ WHERE NOT EXISTS (
 );
 GO
 
+/* ============================================================
+   DATOS INICIALES
+   ============================================================ */
+
+INSERT INTO dbo.rol (fecha_registro, activo, nombre, descripcion)
+SELECT CAST(SYSDATETIME() AS DATE), 1, 'ADMINISTRADOR', 'Rol con acceso completo al sistema'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.rol rol_existente
+    WHERE rol_existente.nombre = 'ADMINISTRADOR'
+);
+GO
+
+INSERT INTO dbo.usuario (
+    fecha_registro,
+    activo,
+    usuario,
+    nombres,
+    ape_paterno,
+    ape_materno,
+    dni,
+    codigo,
+    email,
+    contrasena
+)
+SELECT
+    CAST(SYSDATETIME() AS DATE),
+    1,
+    '71477205',
+    'Carlos Jesus',
+    'Chinchay',
+    'Pecho',
+    '71477205',
+    'USR001',
+    'carlos@yopmail.com',
+    '$2a$10$Efa0BQyjCWDzNwwTwzcs6.6A2sceUD4fDCZXqDuDYbAjmX4HXlNjK'
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM dbo.usuario usuario_existente
+    WHERE usuario_existente.usuario = '71477205'
+);
+GO

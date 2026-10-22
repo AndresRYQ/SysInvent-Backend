@@ -1,12 +1,20 @@
 package com.agrihusac.SysInvent.model.response.parteequipo;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record ParteEquipoResponse(
-        Integer parteEquipoId,
-        String codigo,
-        String nombre,
-        String descripcion,
-        Boolean activo,
-        LocalDate fechaRegistro
-) {}
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ParteEquipoResponse {
+    private Integer parteEquipoId;
+    private String codigo;
+    private String nombre;
+    private String descripcion;
+    private Boolean activo;
+    private String fechaRegistro;
+}

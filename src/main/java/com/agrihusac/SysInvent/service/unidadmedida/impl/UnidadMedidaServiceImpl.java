@@ -7,6 +7,7 @@ import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.unidadmedida.UnidadMedidaService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
 
     @Override
     protected UnidadMedidaResponse respuesta(UnidadMedidaEntity entity) {
-        return new UnidadMedidaResponse(entity.getUnidadMedidaId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+        return new UnidadMedidaResponse(entity.getUnidadMedidaId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
@@ -49,7 +50,7 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
 
     @Override
     protected Page<UnidadMedidaEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
     protected boolean estaActivo(UnidadMedidaEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(UnidadMedidaRequest request) {
+    protected ResponseEntity<MessageResponse> validar(UnidadMedidaRequest request) {
         return null;
     }
 }

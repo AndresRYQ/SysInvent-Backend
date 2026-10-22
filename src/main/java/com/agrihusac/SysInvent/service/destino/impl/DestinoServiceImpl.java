@@ -7,9 +7,9 @@ import com.agrihusac.SysInvent.repository.DestinoRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.destino.DestinoService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -39,17 +39,18 @@ public class DestinoServiceImpl extends AbstractCatalogoService<DestinoEntity, D
 
     @Override
     protected DestinoResponse respuesta(DestinoEntity entity) {
-        return new DestinoResponse(entity.getDestinoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+        return new DestinoResponse(entity.getDestinoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
     protected boolean duplicado(DestinoRequest request, Integer idExcluido) {
-        return idExcluido == null ? repository.existsByNombreIgnoreCase(request.nombre()) : repository.existsByNombreIgnoreCaseAndDestinoIdNot(request.nombre(), idExcluido);
+        return idExcluido == null ? repository.existsByNombreIgnoreCase(request.nombre())
+            : repository.existsByNombreIgnoreCaseAndDestinoIdNot(request.nombre(), idExcluido);
     }
 
     @Override
     protected Page<DestinoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class DestinoServiceImpl extends AbstractCatalogoService<DestinoEntity, D
     protected boolean estaActivo(DestinoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(DestinoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(DestinoRequest request) {
         return null;
     }
 }

@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String BEARER_PREFIX = "Bearer ";
     private static final int ADMIN_ROLE_ID = 1;
     public static final String JWT_ERROR_ATTRIBUTE = "jwtError";
@@ -37,11 +40,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
 
-        if (authorization != null
-                && authorization.startsWith(BEARER_PREFIX)
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String token = authorization.substring(BEARER_PREFIX.length()).trim();
-            autenticar(token, request);
+        if (authorization != null && !authorization.isBlank()) {
+            if (authorization.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
+                String token = authorization.substring(BEARER_PREFIX.length()).trim();
+
+                if (token.isBlank()) {
+                    request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token Bearer está vacío");
+                } else {
+                    autenticar(token, request);
+                }
+            } else {
+                request.setAttribute(
+                        JWT_ERROR_ATTRIBUTE,
+                        "El encabezado Authorization debe usar el formato Bearer");
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -62,9 +74,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             usuario, null, obtenerAuthorities(claims));
             authentication.setDetails(claims);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (ExpiredJwtException ignored) {
+        } catch (ExpiredJwtException exception) {
+            LOGGER.warn("JWT diagnóstico: token expirado");
             request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token ha expirado");
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException exception) {
+            LOGGER.warn(
+                    "JWT diagnóstico: token inválido, causa={} - {}",
+                    exception.getClass().getSimpleName(),
+                    exception.getMessage());
             request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token no es válido");
         }
     }

@@ -29,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private static final String CONTRASENA_POR_DEFECTO = "agrihusa123";
     private static final String MSG_USUARIO_REGISTRADO = "Usuario registrado correctamente";
     private static final String MSG_USUARIO_ACTUALIZADO = "Usuario actualizado correctamente";
     private static final String MSG_USUARIO_ACTIVADO = "Usuario activado correctamente";
@@ -39,6 +38,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final String MSG_EMAIL_EXISTENTE = "El email ya se encuentra registrado";
     private static final String MSG_ROL_NO_ENCONTRADO = "Uno o mas roles no existen o estan inactivos";
     private static final String MSG_ROL_DUPLICADO = "La lista de roles contiene valores duplicados";
+    private static final String MSG_UNICO_ROL = "El usuario debe tener exactamente un rol";
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -66,6 +66,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
+        if (rolesIds.size() != 1) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_UNICO_ROL);
+        }
         if (rolesIds.size() != request.getRolesIds().size()) {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
         }
@@ -81,7 +84,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apeMaterno(request.getApeMaterno())
                 .dni(request.getDni())
                 .email(request.getEmail())
-                .contrasena(passwordEncoder.encode(CONTRASENA_POR_DEFECTO))
+                .contrasena(passwordEncoder.encode(request.getContrasena()))
                 .activo(Boolean.TRUE)
                 .build();
 
@@ -110,6 +113,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
 
         Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
+        if (rolesIds.size() != 1) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_UNICO_ROL);
+        }
         if (rolesIds.size() != request.getRolesIds().size()) {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
         }

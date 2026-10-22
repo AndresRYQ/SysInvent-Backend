@@ -1,6 +1,5 @@
 package com.agrihusac.SysInvent.model.response;
 
-import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +15,5 @@ public class CategoriaResponse {
     private String nombre;
     private String descripcion;
     private Boolean activo;
-    private LocalDate fechaRegistro;
+    private String fechaRegistro;
 }

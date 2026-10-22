@@ -9,6 +9,7 @@ import com.agrihusac.SysInvent.utils.MessageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -37,7 +38,9 @@ public class RolController {
     @Operation(summary = "Listar roles", description = "Lista los roles registrados con paginación")
     public CustomPage<RolResponse> listarRoles(
             @RequestParam(value = "nombre", required = false) String nombre,
+            @Min(value = 1, message = "La página debe ser mayor o igual a 1")
             @RequestParam(value = "pagina", defaultValue = "1") Integer pagina,
+            @Min(value = 1, message = "El tamaño de página debe ser mayor o igual a 1")
             @RequestParam(value = "tamPagina", defaultValue = "10") Integer tamanioPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamanioPagina);
         return rolService.listarRoles(nombre, pageable);

@@ -13,24 +13,34 @@ import org.springframework.data.web.PageableDefault;
 
 public interface RolRepository extends JpaRepository<RolEntity, Integer> {
 
-    List<RolEntity> findAllByRolIdInAndActivoTrue(Collection<Integer> rolesIds);
+    List<RolEntity> findAllByActivoTrueOrderByNombreAsc();
 
-    @Query(value = """
-        SELECT
-            r.rol_id AS "rolId",
-            r.nombre AS "nombre",
-            r.descripcion AS "descripcion"
-        FROM rol r
-        WHERE r.activo = TRUE
-        AND (:nombre IS NULL OR :nombre = '' OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
-        """,
-        countQuery = """
-            SELECT COUNT(*)
-            FROM rol r
-            WHERE r.activo = TRUE
-            AND (:nombre IS NULL OR :nombre = '' OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
-            """,
-        nativeQuery = true)
-    Page<RolProjection> listarRoles(@Param("nombre") String nombre,
-                                    @PageableDefault(page = 0, size = 10) Pageable pageable);
+    List<RolEntity> findAllByRolIdInAndActivoTrue(
+            Collection<Integer> rolesIds
+    );
+
+    @Query(
+            value = """
+                SELECT r.rolId AS rolId,
+                       r.nombre AS nombre,
+                       r.descripcion AS descripcion,
+                       r.activo AS activo
+                FROM RolEntity r
+                WHERE (:nombre IS NULL
+                       OR :nombre = ''
+                       OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+                """,
+            countQuery = """
+                SELECT COUNT(r)
+                FROM RolEntity r
+                WHERE (:nombre IS NULL
+                       OR :nombre = ''
+                       OR LOWER(r.nombre) LIKE LOWER(CONCAT('%', :nombre, '%')))
+                """,
+            nativeQuery = false
+    )
+    Page<RolProjection> listarRoles(
+            @Param("nombre") String nombre,
+            @PageableDefault(page = 0, size = 10) Pageable pageable
+    );
 }

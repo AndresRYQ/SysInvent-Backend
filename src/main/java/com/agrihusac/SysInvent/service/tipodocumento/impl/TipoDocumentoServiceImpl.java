@@ -7,6 +7,7 @@ import com.agrihusac.SysInvent.repository.TipoDocumentoRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.tipodocumento.TipoDocumentoService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
 
     @Override
     protected TipoDocumentoResponse respuesta(TipoDocumentoEntity entity) {
-        return new TipoDocumentoResponse(entity.getTipoDocumentoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+        return new TipoDocumentoResponse(entity.getTipoDocumentoId(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
@@ -49,7 +50,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
 
     @Override
     protected Page<TipoDocumentoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -62,7 +63,7 @@ public class TipoDocumentoServiceImpl extends AbstractCatalogoService<TipoDocume
     protected boolean estaActivo(TipoDocumentoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(TipoDocumentoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(TipoDocumentoRequest request) {
         return null;
     }
 }

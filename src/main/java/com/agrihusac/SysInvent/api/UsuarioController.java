@@ -43,7 +43,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    @Operation(summary = "Registrar usuario", description = "Registra un usuario con una contraseña generada")
+    @Operation(summary = "Registrar usuario", description = "Registra un usuario con una contraseña proporcionada")
     public ResponseEntity<Object> registrarUsuario(@Valid @RequestBody UsuarioRequest request) {
         return usuarioService.registrarUsuario(request);
     }

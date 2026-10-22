@@ -1,14 +1,22 @@
 package com.agrihusac.SysInvent.model.response.contacto;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record ContactoResponse(
-        Integer contactoId,
-        Integer proveedorId,
-        String nombreCompleto,
-        String cargo,
-        String telefono,
-        String correo,
-        Boolean activo,
-        LocalDate fechaRegistro
-) {}
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ContactoResponse {
+    private Integer contactoId;
+    private Integer proveedorId;
+    private String nombreCompleto;
+    private String cargo;
+    private String telefono;
+    private String correo;
+    private Boolean activo;
+    private String fechaRegistro;
+}

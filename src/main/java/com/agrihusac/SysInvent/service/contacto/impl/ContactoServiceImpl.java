@@ -8,7 +8,9 @@ import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
 import com.agrihusac.SysInvent.repository.ProveedorRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.contacto.ContactoService;
+import com.agrihusac.SysInvent.utils.CustomPage;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -49,7 +51,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected ContactoResponse respuesta(ContactoEntity entity) {
-        return new ContactoResponse(entity.getContactoId(), entity.getProveedor().getProveedorId(), entity.getNombreCompleto(), entity.getCargo(), entity.getTelefono(), entity.getCorreo(), entity.getActivo(), entity.getFechaRegistro());
+        return new ContactoResponse(entity.getContactoId(), entity.getProveedor().getProveedorId(), entity.getNombreCompleto(), entity.getCargo(), entity.getTelefono(), entity.getCorreo(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
@@ -59,7 +61,16 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected Page<ContactoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreCompletoContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreCompletoContainingIgnoreCase(filtro, pageable);
+    }
+
+    @Override
+    public CustomPage<ContactoResponse> listarPorProveedor(String filtro, Integer proveedorId, Pageable pageable) {
+        String texto = filtro == null ? "" : filtro.trim();
+        Page<ContactoResponse> page = repository
+                .findByProveedorProveedorIdAndActivoTrueAndNombreCompletoContainingIgnoreCase(proveedorId, texto, pageable)
+                .map(this::respuesta);
+        return new CustomPage<>(page);
     }
 
     @Override
@@ -72,7 +83,7 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     protected boolean estaActivo(ContactoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ContactoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ContactoRequest request) {
         if (proveedorRepository.findById(request.proveedorId())
                 .filter(proveedor -> Boolean.TRUE.equals(proveedor.getActivo())).isEmpty()) {
             return MessageResponse.setResponse(false, HttpStatus.NOT_FOUND, "No se encontro un proveedor activo con ese id");

@@ -7,6 +7,7 @@ import com.agrihusac.SysInvent.repository.ParteEquipoRepository;
 import com.agrihusac.SysInvent.service.catalogo.AbstractCatalogoService;
 import com.agrihusac.SysInvent.service.parteequipo.ParteEquipoService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
+import com.agrihusac.SysInvent.utils.FechaUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
 
     @Override
     protected ParteEquipoResponse respuesta(ParteEquipoEntity entity) {
-        return new ParteEquipoResponse(entity.getParteEquipoId(), entity.getCodigo(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), entity.getFechaRegistro());
+        return new ParteEquipoResponse(entity.getParteEquipoId(), entity.getCodigo(), entity.getNombre(), entity.getDescripcion(), entity.getActivo(), FechaUtils.formatear(entity.getFechaRegistro()));
     }
 
     @Override
@@ -51,7 +52,7 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
 
     @Override
     protected Page<ParteEquipoEntity> buscarActivos(String filtro, Pageable pageable) {
-        return repository.findByActivoTrueAndNombreContainingIgnoreCase(filtro, pageable);
+        return repository.findByNombreContainingIgnoreCase(filtro, pageable);
     }
 
     @Override
@@ -64,7 +65,7 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
     protected boolean estaActivo(ParteEquipoEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
 
     @Override
-    protected ResponseEntity<Object> validar(ParteEquipoRequest request) {
+    protected ResponseEntity<MessageResponse> validar(ParteEquipoRequest request) {
         return null;
     }
 }

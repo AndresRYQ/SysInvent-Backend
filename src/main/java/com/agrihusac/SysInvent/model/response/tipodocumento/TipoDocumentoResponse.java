@@ -1,11 +1,19 @@
 package com.agrihusac.SysInvent.model.response.tipodocumento;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record TipoDocumentoResponse(
-        Integer tipoDocumentoId,
-        String nombre,
-        String descripcion,
-        Boolean activo,
-        LocalDate fechaRegistro
-) {}
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class TipoDocumentoResponse {
+    private Integer tipoDocumentoId;
+    private String nombre;
+    private String descripcion;
+    private Boolean activo;
+    private String fechaRegistro;
+}

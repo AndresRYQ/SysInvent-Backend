@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -122,5 +123,118 @@ class CatalogosIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(contactPayload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.proveedorId").value(proveedorId));
+
+        mockMvc.perform(get("/api/v1/catalogos/contactos").param("proveedorId", String.valueOf(proveedorId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos[0].proveedorId").value(proveedorId))
+                .andExpect(jsonPath("$.datos", hasSize(1)));
+    }
+
+    @Test
+    void productSupportsCrudAndValidatesReferences() throws Exception {
+        String tipoNombre = "Tipo-" + UUID.randomUUID();
+        String tipoCreated = mockMvc.perform(post("/api/v1/catalogos/tipos-producto")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"%s\"}".formatted(tipoNombre)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        int tipoProductoId = objectMapper.readTree(tipoCreated).path("data").path("tipoProductoId").asInt();
+
+        String catNombre = "Categoria-" + UUID.randomUUID();
+        String catCreated = mockMvc.perform(post("/api/v1/catalogos/categorias")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"%s\"}".formatted(catNombre)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        int categoriaId = objectMapper.readTree(catCreated).path("data").path("id").asInt();
+
+        String unidadNombre = "Unidad-" + UUID.randomUUID();
+        String unidadCreated = mockMvc.perform(post("/api/v1/catalogos/unidades-medida")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"%s\"}".formatted(unidadNombre)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        int unidadMedidaId = objectMapper.readTree(unidadCreated).path("data").path("unidadMedidaId").asInt();
+
+        String ruc = UUID.randomUUID().toString().replace("-", "").substring(0, 11);
+        String provCreated = mockMvc.perform(post("/api/v1/catalogos/proveedores")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ruc\":\"%s\",\"razonSocial\":\"Proveedor producto\"}".formatted(ruc)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        int proveedorId = objectMapper.readTree(provCreated).path("data").path("proveedorId").asInt();
+
+        String codigo = "SKU-" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String productPayload = """
+                {"codigo":"%s","nombre":"Producto test","descripcion":"desc","tipoProductoId":%d,
+                 "categoriaId":%d,"unidadMedidaId":%d,"proveedorId":%d,
+                 "stockMinimo":2,"precioUnitario":5.5}
+                """.formatted(codigo, tipoProductoId, categoriaId, unidadMedidaId, proveedorId);
+
+        String productCreated = mockMvc.perform(post("/api/v1/catalogos/productos")
+                        .contentType(MediaType.APPLICATION_JSON).content(productPayload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.codigo").value(codigo))
+                .andExpect(jsonPath("$.data.activo").value(true))
+                .andExpect(jsonPath("$.data.proveedorId").value(proveedorId))
+                .andExpect(jsonPath("$.data.stockActual").value(0))
+                .andReturn().getResponse().getContentAsString();
+        int productoId = objectMapper.readTree(productCreated).path("data").path("productoId").asInt();
+
+        mockMvc.perform(post("/api/v1/catalogos/productos")
+                        .contentType(MediaType.APPLICATION_JSON).content(productPayload))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(get("/api/v1/catalogos/productos").param("nombre", "Producto test"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos[0].productoId").value(productoId));
+
+        mockMvc.perform(get("/api/v1/catalogos/productos/{id}", productoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.codigo").value(codigo));
+
+        mockMvc.perform(put("/api/v1/catalogos/productos/{id}", productoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(productPayload.replace("\"nombre\":\"Producto test\"", "\"nombre\":\"Producto editado\"")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.nombre").value("Producto editado"));
+
+        mockMvc.perform(get("/api/v1/catalogos/productos/{id}", productoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.stockActual").value(0));
+
+        mockMvc.perform(delete("/api/v1/catalogos/productos/{id}", productoId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.activo").value(false));
+
+        mockMvc.perform(get("/api/v1/catalogos/productos").param("nombre", "Producto editado"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos[0].productoId").value(productoId))
+                .andExpect(jsonPath("$.datos[0].activo").value(false));
+
+        mockMvc.perform(put("/api/v1/catalogos/productos/{id}/estado", productoId)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"activo\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.activo").value(true));
+
+        String invalidReferencePayload = """
+                {"codigo":"%s","nombre":"Producto sin proveedor","tipoProductoId":%d,
+                 "categoriaId":%d,"unidadMedidaId":%d,"proveedorId":999999,
+                 "stockMinimo":0,"precioUnitario":1}
+                """.formatted(codigo + "X", tipoProductoId, categoriaId, unidadMedidaId);
+        mockMvc.perform(post("/api/v1/catalogos/productos")
+                        .contentType(MediaType.APPLICATION_JSON).content(invalidReferencePayload))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(post("/api/v1/catalogos/productos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"nombre\":\"Sin codigo\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rolesCanBeListedWithJpaQuery() throws Exception {
+        mockMvc.perform(get("/api/roles"))
+                .andExpect(status().isOk());
     }
 }

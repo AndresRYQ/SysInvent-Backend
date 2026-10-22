@@ -1,0 +1,52 @@
+package com.agrihusac.SysInvent.api;
+
+import com.agrihusac.SysInvent.model.request.proveedor.ProveedorRequest;
+import com.agrihusac.SysInvent.model.request.proveedor.EstadoCatalogoRequest;
+import com.agrihusac.SysInvent.model.response.proveedor.ProveedorResponse;
+import com.agrihusac.SysInvent.service.proveedor.ProveedorService;
+import com.agrihusac.SysInvent.utils.CustomPage;
+import com.agrihusac.SysInvent.utils.MessageResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/catalogos/proveedores")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "Proveedores", description = "Operaciones de proveedores")
+public class ProveedorController {
+    private final ProveedorService service;
+
+    @GetMapping
+    @Operation(operationId = "listarProveedores", summary = "Listar proveedores")
+    public CustomPage<ProveedorResponse> listarProveedores(@RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
+            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
+        Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
+        return service.listar(nombre, pageable);
+    }
+
+    @PostMapping
+    @Operation(operationId = "registrarProveedor", summary = "Registrar proveedor")
+    public ResponseEntity<MessageResponse> registrarProveedor(@Valid @RequestBody ProveedorRequest request) { return service.crear(request); }
+
+    @PutMapping("/{id}")
+    @Operation(operationId = "actualizarProveedor", summary = "Actualizar proveedor")
+    public ResponseEntity<MessageResponse> actualizarProveedor(@PathVariable @Min(1) Integer id, @Valid @RequestBody ProveedorRequest request) {
+        return service.actualizar(id, request);
+    }
+
+    @PutMapping("/{id}/estado")
+    @Operation(operationId = "cambiarEstadoProveedor", summary = "Cambiar estado del proveedor")
+    public ResponseEntity<MessageResponse> cambiarEstadoProveedor(@PathVariable @Min(1) Integer id,
+            @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
+}

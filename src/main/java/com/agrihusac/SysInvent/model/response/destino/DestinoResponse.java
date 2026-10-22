@@ -1,11 +1,21 @@
 package com.agrihusac.SysInvent.model.response.destino;
 
-import java.time.LocalDate;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public record DestinoResponse(
-        Integer destinoId,
-        String nombre,
-        String descripcion,
-        Boolean activo,
-        LocalDate fechaRegistro
-) {}
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class DestinoResponse {
+
+    private Integer destinoId;
+    private String nombre;
+    private String descripcion;
+    private Boolean activo;
+
+    private String fechaRegistro;
+}
