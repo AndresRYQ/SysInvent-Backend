@@ -32,6 +32,11 @@ La aplicación utiliza SQL Server. Antes de iniciarla:
 
 El puerto predeterminado es `8080`; puede cambiarse con `PORT`.
 
+### Credenciales de usuario
+
+- Usuario: `71477205`
+- Contraseña: `contraseña`
+
 ## Tecnologías
 
 | Tecnología | Versión / detalle |
