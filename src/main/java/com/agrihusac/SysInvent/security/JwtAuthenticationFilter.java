@@ -9,9 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -88,24 +86,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private List<SimpleGrantedAuthority> obtenerAuthorities(Claims claims) {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        Object rolesClaim = claims.get("roles");
-        if (!(rolesClaim instanceof Collection<?> roles)) {
-            return authorities;
-        }
-
-        for (Object roleObject : roles) {
-            if (!(roleObject instanceof Map<?, ?> role)) {
-                continue;
-            }
-
-            if (esAdministrador(role.get("rolId"))) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            }
-
-            Object nombre = role.get("nombre");
-            if (nombre instanceof String nombreRol && !nombreRol.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + nombreRol));
-            }
+        if (esAdministrador(claims.get("rolId"))) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
         return authorities;

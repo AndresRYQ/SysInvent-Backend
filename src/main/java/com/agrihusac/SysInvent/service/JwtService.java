@@ -27,7 +27,7 @@ public class JwtService {
     }
 
     public String generateToken(UsuarioEntity usuario,
-                               List<Map<String, Object>> roles,
+                               Integer rolId,
                                List<Map<String, Object>> modulos) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationMilliseconds);
@@ -36,17 +36,11 @@ public class JwtService {
                 .setSubject(usuario.getUsuario())
                 .claim("usuarioId", usuario.getUsuarioId())
                 .claim("email", usuario.getEmail())
-                .claim("roles", roles)
+                .claim("rolId", rolId)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration);
 
-        if (roles.size() == 1 && roles.get(0).get("rolId") != null) {
-            builder.claim("rolId", roles.get(0).get("rolId"));
-        }
-
-        if (!modulos.isEmpty()) {
-            builder.claim("modulos", modulos);
-        }
+        builder.claim("modulos", modulos);
 
         return builder
                 .signWith(key, SignatureAlgorithm.HS256)
