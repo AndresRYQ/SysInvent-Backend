@@ -5,17 +5,24 @@ import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
 import com.agrihusac.SysInvent.model.entity.RolEntity;
 import com.agrihusac.SysInvent.model.mapper.GlobalMapper;
 import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
+import com.agrihusac.SysInvent.model.request.ActualizarPerfilRequest;
+import com.agrihusac.SysInvent.model.request.BitacoraRequest;
+import com.agrihusac.SysInvent.model.request.CambiarContrasenaRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
 import com.agrihusac.SysInvent.model.response.UsuarioResponse;
+import com.agrihusac.SysInvent.model.response.PerfilUsuarioResponse;
 import com.agrihusac.SysInvent.repository.RolRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRepository;
 import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import com.agrihusac.SysInvent.service.UsuarioService;
+import com.agrihusac.SysInvent.service.bitacora.BitacoraService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import com.agrihusac.SysInvent.utils.CustomPage;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,12 +48,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final String MSG_ROL_NO_ENCONTRADO = "Uno o mas roles no existen o estan inactivos";
     private static final String MSG_ROL_DUPLICADO = "La lista de roles contiene valores duplicados";
     private static final String MSG_UNICO_ROL = "El usuario debe tener exactamente un rol";
+    private static final String MSG_CONTRASENA_ACTUAL_INVALIDA = "La contrasena actual es incorrecta";
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final UsuarioRolRepository usuarioRolRepository;
     private final PasswordEncoder passwordEncoder;
     private final GlobalMapper globalMapper;
+    private final BitacoraService bitacoraService;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,7 +67,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional(readOnly = true)
-    public UsuarioResponse obtenerPerfilAutenticado(String usuarioLogin) {
+    public PerfilUsuarioResponse obtenerPerfilAutenticado(String usuarioLogin) {
         UsuarioEntity usuario = usuarioRepository
                 .findByUsuarioAndActivoTrue(usuarioLogin)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -82,8 +91,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .trim()
                 .replaceAll("\\s+", " ");
 
-        return UsuarioResponse.builder()
-                .usuarioId(usuario.getUsuarioId())
+        return PerfilUsuarioResponse.builder()
                 .codigo(usuario.getCodigo())
                 .usuario(usuario.getUsuario())
                 .dni(usuario.getDni())
@@ -92,12 +100,76 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apeMaterno(usuario.getApeMaterno())
                 .nombreCompleto(nombreCompleto)
                 .correo(usuario.getEmail())
-                .rolId(rol == null ? null : rol.getRolId())
                 .nombreRol(rol == null ? null : rol.getNombre())
-                .descripcionRol(rol == null ? null : rol.getDescripcion())
                 .estado(usuario.getActivo())
                 .estadoDsc(Boolean.TRUE.equals(usuario.getActivo()) ? "Activo" : "Inactivo")
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> actualizarPerfil(String usuarioLogin, ActualizarPerfilRequest request) {
+        UsuarioEntity usuario = usuarioRepository.findByUsuarioAndActivoTrue(usuarioLogin).orElse(null);
+
+        if (usuario == null) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_USUARIO_NO_ENCONTRADO);
+        }
+
+        if (usuarioRepository.existsByEmailAndUsuarioIdNot(request.getEmail(), usuario.getUsuarioId())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
+        }
+
+        List<String> cambios = new ArrayList<>();
+        agregarCambio(cambios, "nombres", usuario.getNombres(), request.getNombres().trim());
+        agregarCambio(cambios, "apePaterno", usuario.getApePaterno(), request.getApePaterno().trim());
+        agregarCambio(cambios, "apeMaterno", usuario.getApeMaterno(), request.getApeMaterno().trim());
+        agregarCambio(cambios, "email", usuario.getEmail(), request.getEmail().trim());
+
+        usuario.setNombres(request.getNombres().trim());
+        usuario.setApePaterno(request.getApePaterno().trim());
+        usuario.setApeMaterno(request.getApeMaterno().trim());
+        usuario.setEmail(request.getEmail().trim());
+        usuarioRepository.save(usuario);
+
+        if (!cambios.isEmpty()) {
+            bitacoraService.registrar(BitacoraRequest.builder()
+                    .modulo("Perfil de usuario")
+                    .accion("EDITAR")
+                    .detalle("Se actualizaron datos del perfil. Cambios: " + String.join("; ", cambios))
+                    .registroId(usuario.getCodigo())
+                    .build());
+        }
+
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
+    }
+
+    private void agregarCambio(List<String> cambios, String campo, String anterior, String nuevo) {
+        if (!Objects.equals(anterior, nuevo)) {
+            cambios.add(campo + ": '" + String.valueOf(anterior) + "' -> '" + nuevo + "'");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> cambiarContrasena(String usuarioLogin, CambiarContrasenaRequest request) {
+        UsuarioEntity usuario = usuarioRepository.findByUsuarioAndActivoTrue(usuarioLogin).orElse(null);
+
+        if (usuario == null) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_USUARIO_NO_ENCONTRADO);
+        }
+        if (!passwordEncoder.matches(request.getContrasenaActual(), usuario.getContrasena())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_CONTRASENA_ACTUAL_INVALIDA);
+        }
+        if (!request.getNuevaContrasena().equals(request.getConfirmarContrasena())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, "Las contrasenas nuevas no coinciden");
+        }
+        if (passwordEncoder.matches(request.getNuevaContrasena(), usuario.getContrasena())) {
+            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, "La nueva contrasena debe ser diferente");
+        }
+
+        usuario.setContrasena(passwordEncoder.encode(request.getNuevaContrasena()));
+        usuarioRepository.save(usuario);
+        return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, "Contrasena actualizada correctamente");
     }
 
     @Override
