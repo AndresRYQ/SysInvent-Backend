@@ -28,6 +28,7 @@ public class JwtService {
 
     public String generateToken(UsuarioEntity usuario,
                                Integer rolId,
+                               String nombreRol,
                                List<Map<String, Object>> modulos) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + expirationMilliseconds);
@@ -37,6 +38,7 @@ public class JwtService {
                 .claim("usuarioId", usuario.getUsuarioId())
                 .claim("email", usuario.getEmail())
                 .claim("rolId", rolId)
+                .claim("nombreRol", nombreRol)
                 .setIssuedAt(issuedAt)
                 .setExpiration(expiration);
 

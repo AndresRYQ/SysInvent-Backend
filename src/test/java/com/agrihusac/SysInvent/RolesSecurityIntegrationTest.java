@@ -36,6 +36,7 @@ class RolesSecurityIntegrationTest {
         String token = jwtService.generateToken(
                 usuario,
                 1,
+                "ADMINISTRADOR",
                 List.of());
 
         mockMvc.perform(get("/api/roles")

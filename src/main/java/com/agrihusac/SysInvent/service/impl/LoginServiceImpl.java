@@ -2,6 +2,7 @@ package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
 import com.agrihusac.SysInvent.model.entity.ModuloEntity;
+import com.agrihusac.SysInvent.model.entity.RolEntity;
 import com.agrihusac.SysInvent.model.entity.RolModuloEntity;
 import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
 import com.agrihusac.SysInvent.model.request.LoginRequest;
@@ -94,6 +95,8 @@ public class LoginServiceImpl implements LoginService {
         Set<Integer> moduloIdsIncluidos = new LinkedHashSet<>();
 
         Integer rolId = rolesIds.get(0);
+        RolEntity rol = rolRepository.findById(rolId).orElse(null);
+        String nombreRol = rol != null ? rol.getNombre() : null;
         List<Integer> moduloIds = administrador
                 ? List.of()
                 : moduloIdsPorRol.getOrDefault(rolId, List.of());
@@ -104,7 +107,11 @@ public class LoginServiceImpl implements LoginService {
             }
         }
 
-        String token = jwtService.generateToken(usuario, rolId, modulos);
+        String token = jwtService.generateToken(
+                usuario,
+                rolId,
+                nombreRol,
+                modulos);
         return ResponseEntity.ok(new LoginResponse(true, MSG_LOGIN_CORRECTO,
                 HttpStatus.OK.value(), token));
     }
