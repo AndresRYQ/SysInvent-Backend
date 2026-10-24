@@ -1,8 +1,11 @@
 package com.agrihusac.SysInvent.api;
 
 import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
+import com.agrihusac.SysInvent.model.request.ActualizarPerfilRequest;
+import com.agrihusac.SysInvent.model.request.CambiarContrasenaRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
 import com.agrihusac.SysInvent.model.response.UsuarioResponse;
+import com.agrihusac.SysInvent.model.response.PerfilUsuarioResponse;
 import com.agrihusac.SysInvent.service.UsuarioService;
 import com.agrihusac.SysInvent.utils.CustomPage;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +14,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,6 +44,29 @@ public class UsuarioController {
             @RequestParam(value = "tamPagina", defaultValue = "10") Integer tamanioPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamanioPagina);
         return usuarioService.listarUsuarios(usuario, rol, estado, pageable);
+    }
+
+    @GetMapping("/perfil")
+    @Operation(summary = "Obtener perfil del usuario autenticado")
+    public ResponseEntity<PerfilUsuarioResponse> obtenerPerfil(Authentication authentication) {
+        return ResponseEntity.ok(
+                usuarioService.obtenerPerfilAutenticado(authentication.getName()));
+    }
+
+    @PutMapping("/perfil")
+    @Operation(summary = "Actualizar perfil del usuario autenticado")
+    public ResponseEntity<Object> actualizarPerfil(
+            Authentication authentication,
+            @Valid @RequestBody ActualizarPerfilRequest request) {
+        return usuarioService.actualizarPerfil(authentication.getName(), request);
+    }
+
+    @PutMapping("/perfil/contrasena")
+    @Operation(summary = "Cambiar contrasena del usuario autenticado")
+    public ResponseEntity<Object> cambiarContrasena(
+            Authentication authentication,
+            @Valid @RequestBody CambiarContrasenaRequest request) {
+        return usuarioService.cambiarContrasena(authentication.getName(), request);
     }
 
     @PostMapping

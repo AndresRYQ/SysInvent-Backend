@@ -9,4 +9,6 @@ public interface UsuarioRolRepository extends JpaRepository<UsuarioRolEntity, In
     List<UsuarioRolEntity> findAllByUsuarioId(Integer usuarioId);
 
     List<UsuarioRolEntity> findAllByUsuarioIdAndActivoTrue(Integer usuarioId);
+
+    long countByRolIdAndActivoTrue(Integer rolId);
 }

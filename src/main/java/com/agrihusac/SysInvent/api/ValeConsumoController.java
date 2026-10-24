@@ -64,9 +64,11 @@ public class ValeConsumoController {
 
     @PostMapping
     public ResponseEntity<Object> crear(@Valid @RequestBody ValeConsumoRequest request) {
-        valeConsumoService.crear(request);
         return MessageResponse.setResponse(
-                true, HttpStatus.CREATED, "Vale de consumo registrado correctamente."
+                true,
+                HttpStatus.CREATED,
+                "Vale de consumo registrado correctamente.",
+                valeConsumoService.crear(request)
         );
     }
 

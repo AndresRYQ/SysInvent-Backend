@@ -157,7 +157,12 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
         log.info("Ingreso de almacen {} registrado con {} detalle(s) y movimientos Kardex",
                 ingreso.getNumeroIngreso(), ingreso.getDetalles().size());
 
-        return MessageResponse.setResponse(true, HttpStatus.CREATED, MSG_REGISTRADO);
+        return MessageResponse.setResponse(
+                true,
+                HttpStatus.CREATED,
+                MSG_REGISTRADO,
+                respuesta(ingreso, Map.of())
+        );
     }
 
     @Override

@@ -545,33 +545,3 @@ WHERE NOT EXISTS (
     WHERE usuario_existente.usuario = '71477205'
 );
 GO
-
-INSERT INTO dbo.usuario (
-    fecha_registro,
-    estado,
-    dni,
-    nombre,
-    apellido_paterno,
-    apellido_materno,
-    usuario,
-    codigo_usuario,
-    correo,
-    password
-)
-SELECT
-    CAST(SYSDATETIME() AS DATE),
-    1,
-    '99999999',
-    'Andres',
-    'Ybañez',
-    'Quispe',
-    'Andres',
-    'USR002',
-    'andres@yopmail.com',
-    '$2a$10$/iLy3hfuMWht/8S24sb42.es81QjzzHtKKg15agxVBzbqkSg3kPcq'
-WHERE NOT EXISTS (
-    SELECT 1
-    FROM dbo.usuario u
-    WHERE u.usuario = 'Andres'
-);
-GO

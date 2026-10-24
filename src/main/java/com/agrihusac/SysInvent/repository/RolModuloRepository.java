@@ -10,4 +10,6 @@ public interface RolModuloRepository extends JpaRepository<RolModuloEntity, Inte
     List<RolModuloEntity> findAllByRolId(Integer rolId);
 
     List<RolModuloEntity> findAllByRolIdInAndActivoTrue(Collection<Integer> rolIds);
+
+    List<RolModuloEntity> findAllByRolIdAndActivoTrue(Integer rolId);
 }
