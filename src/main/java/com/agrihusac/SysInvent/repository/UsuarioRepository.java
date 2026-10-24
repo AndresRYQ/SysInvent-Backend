@@ -15,6 +15,7 @@ public interface UsuarioRepository
     @Query(
             value = """
                 SELECT u.usuario_id AS usuarioId,
+                       u.codigo AS codigo,
                        u.usuario AS usuario,
                        u.dni AS dni,
                        u.nombres AS nombres,
@@ -62,6 +63,7 @@ public interface UsuarioRepository
                 )
                 GROUP BY
                     u.usuario_id,
+                    u.codigo,
                     u.usuario,
                     u.dni,
                     u.nombres,

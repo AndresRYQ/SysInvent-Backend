@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,6 +41,13 @@ public class UsuarioController {
             @RequestParam(value = "tamPagina", defaultValue = "10") Integer tamanioPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamanioPagina);
         return usuarioService.listarUsuarios(usuario, rol, estado, pageable);
+    }
+
+    @GetMapping("/perfil")
+    @Operation(summary = "Obtener perfil del usuario autenticado")
+    public ResponseEntity<UsuarioResponse> obtenerPerfil(Authentication authentication) {
+        return ResponseEntity.ok(
+                usuarioService.obtenerPerfilAutenticado(authentication.getName()));
     }
 
     @PostMapping

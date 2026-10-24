@@ -11,6 +11,8 @@ public interface UsuarioService {
 
     CustomPage<UsuarioResponse> listarUsuarios(String usuario, String rol, Boolean estado, Pageable pageable);
 
+    UsuarioResponse obtenerPerfilAutenticado(String usuario);
+
     ResponseEntity<Object> registrarUsuario(UsuarioRequest request);
 
     ResponseEntity<Object> actualizarUsuario(ActualizarUsuarioRequest request);

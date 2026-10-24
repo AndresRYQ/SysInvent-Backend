@@ -2,6 +2,7 @@ package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
 import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
+import com.agrihusac.SysInvent.model.entity.RolEntity;
 import com.agrihusac.SysInvent.model.mapper.GlobalMapper;
 import com.agrihusac.SysInvent.model.request.ActualizarUsuarioRequest;
 import com.agrihusac.SysInvent.model.request.UsuarioRequest;
@@ -24,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +54,50 @@ public class UsuarioServiceImpl implements UsuarioService {
         Page<UsuarioResponse> usuarios = usuarioRepository.listarUsuarios(usuario, rol, estado, pageable)
                 .map(projection -> globalMapper.map(projection, UsuarioResponse.class));
         return new CustomPage<>(usuarios);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UsuarioResponse obtenerPerfilAutenticado(String usuarioLogin) {
+        UsuarioEntity usuario = usuarioRepository
+                .findByUsuarioAndActivoTrue(usuarioLogin)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        MSG_USUARIO_NO_ENCONTRADO));
+
+        UsuarioRolEntity usuarioRol = usuarioRolRepository
+                .findAllByUsuarioIdAndActivoTrue(usuario.getUsuarioId())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
+        RolEntity rol = usuarioRol == null || usuarioRol.getRolId() == null
+                ? null
+                : rolRepository.findById(usuarioRol.getRolId()).orElse(null);
+
+        String nombreCompleto = String.join(" ",
+                usuario.getNombres() == null ? "" : usuario.getNombres().trim(),
+                usuario.getApePaterno() == null ? "" : usuario.getApePaterno().trim(),
+                usuario.getApeMaterno() == null ? "" : usuario.getApeMaterno().trim())
+                .trim()
+                .replaceAll("\\s+", " ");
+
+        return UsuarioResponse.builder()
+                .usuarioId(usuario.getUsuarioId())
+                .codigo(usuario.getCodigo())
+                .usuario(usuario.getUsuario())
+                .dni(usuario.getDni())
+                .nombres(usuario.getNombres())
+                .apePaterno(usuario.getApePaterno())
+                .apeMaterno(usuario.getApeMaterno())
+                .nombreCompleto(nombreCompleto)
+                .correo(usuario.getEmail())
+                .rolId(rol == null ? null : rol.getRolId())
+                .nombreRol(rol == null ? null : rol.getNombre())
+                .descripcionRol(rol == null ? null : rol.getDescripcion())
+                .estado(usuario.getActivo())
+                .estadoDsc(Boolean.TRUE.equals(usuario.getActivo()) ? "Activo" : "Inactivo")
+                .build();
     }
 
     @Override

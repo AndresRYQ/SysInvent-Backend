@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class UsuarioResponse {
 
     private Integer usuarioId;
+    private String codigo;
     private String usuario;
     private String dni;
     private String nombres;
