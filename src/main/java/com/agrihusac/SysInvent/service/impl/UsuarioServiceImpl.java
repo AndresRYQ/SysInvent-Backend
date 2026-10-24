@@ -207,6 +207,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuarioRepository.save(usuario);
 
+        usuario.setCodigo(String.format("USR%03d", usuario.getUsuarioId()));
+        usuarioRepository.save(usuario);
+
         usuarioRolRepository.save(UsuarioRolEntity.builder()
                 .usuarioId(usuario.getUsuarioId())
                 .rolId(rolId)
