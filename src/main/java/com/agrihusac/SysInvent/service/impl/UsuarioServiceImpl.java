@@ -1,5 +1,6 @@
 package com.agrihusac.SysInvent.service.impl;
 
+import com.agrihusac.SysInvent.event.UsuarioRegistradoEvent;
 import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
 import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
 import com.agrihusac.SysInvent.model.entity.RolEntity;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -49,6 +51,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final String MSG_ROL_DUPLICADO = "La lista de roles contiene valores duplicados";
     private static final String MSG_UNICO_ROL = "El usuario debe tener exactamente un rol";
     private static final String MSG_CONTRASENA_ACTUAL_INVALIDA = "La contrasena actual es incorrecta";
+    private static final String CONTRASENA_TEMPORAL = "agrihusac123";
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -56,6 +59,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final GlobalMapper globalMapper;
     private final BitacoraService bitacoraService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional(readOnly = true)
@@ -183,17 +187,12 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
         }
 
-        Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
-        if (rolesIds.size() != 1) {
-            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_UNICO_ROL);
-        }
-        if (rolesIds.size() != request.getRolesIds().size()) {
-            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
-        }
-
-        if (rolRepository.findAllByRolIdInAndActivoTrue(rolesIds).size() != rolesIds.size()) {
+        Integer rolId = request.getRolId();
+        if (rolRepository.findAllByRolIdInAndActivoTrue(Set.of(rolId)).isEmpty()) {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
+
+        String contrasenaTemporal = CONTRASENA_TEMPORAL;
 
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .usuario(request.getDni())
@@ -202,18 +201,24 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .apeMaterno(request.getApeMaterno())
                 .dni(request.getDni())
                 .email(request.getEmail())
-                .contrasena(passwordEncoder.encode(request.getContrasena()))
+                .contrasena(passwordEncoder.encode(contrasenaTemporal))
                 .activo(Boolean.TRUE)
                 .build();
 
         usuarioRepository.save(usuario);
 
-        rolesIds.forEach(rolId -> usuarioRolRepository.save(UsuarioRolEntity.builder()
+        usuarioRolRepository.save(UsuarioRolEntity.builder()
                 .usuarioId(usuario.getUsuarioId())
                 .rolId(rolId)
                 .activo(Boolean.TRUE)
                 .fechaAsignacion(LocalDate.now())
-                .build()));
+                .build());
+
+        eventPublisher.publishEvent(new UsuarioRegistradoEvent(
+                usuario.getEmail(),
+                usuario.getNombres(),
+                usuario.getUsuario(),
+                contrasenaTemporal));
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
     }
@@ -230,15 +235,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.CONFLICT, MSG_EMAIL_EXISTENTE);
         }
 
-        Set<Integer> rolesIds = new HashSet<>(request.getRolesIds());
-        if (rolesIds.size() != 1) {
-            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_UNICO_ROL);
-        }
-        if (rolesIds.size() != request.getRolesIds().size()) {
-            return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.BAD_REQUEST, MSG_ROL_DUPLICADO);
-        }
-
-        if (rolRepository.findAllByRolIdInAndActivoTrue(rolesIds).size() != rolesIds.size()) {
+        Integer rolId = request.getRolId();
+        if (rolRepository.findAllByRolIdInAndActivoTrue(Set.of(rolId)).isEmpty()) {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
@@ -253,18 +251,18 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         rolesAsignados.forEach(usuarioRol -> {
             rolesExistentes.add(usuarioRol.getRolId());
-            usuarioRol.setActivo(rolesIds.contains(usuarioRol.getRolId()));
+            usuarioRol.setActivo(rolId.equals(usuarioRol.getRolId()));
         });
         usuarioRolRepository.saveAll(rolesAsignados);
 
-        rolesIds.stream()
-                .filter(rolId -> !rolesExistentes.contains(rolId))
-                .forEach(rolId -> usuarioRolRepository.save(UsuarioRolEntity.builder()
+        if (!rolesExistentes.contains(rolId)) {
+            usuarioRolRepository.save(UsuarioRolEntity.builder()
                         .usuarioId(usuario.getUsuarioId())
                         .rolId(rolId)
                         .activo(Boolean.TRUE)
                         .fechaAsignacion(LocalDate.now())
-                        .build()));
+                        .build());
+        }
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
     }
