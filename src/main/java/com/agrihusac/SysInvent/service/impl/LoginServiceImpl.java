@@ -66,9 +66,6 @@ public class LoginServiceImpl implements LoginService {
                             HttpStatus.FORBIDDEN.value(), null));
         }
 
-        List<RolEntity> rolesEntities = rolesIds.isEmpty()
-                ? List.of()
-                : rolRepository.findAllByRolIdInAndActivoTrue(rolesIds);
         List<RolModuloEntity> relacionesRolModulo = rolesIds.isEmpty()
                 ? List.of()
                 : rolModuloRepository.findAllByRolIdInAndActivoTrue(rolesIds);
@@ -94,35 +91,27 @@ public class LoginServiceImpl implements LoginService {
                         (primero, segundo) -> primero,
                         LinkedHashMap::new));
 
-        List<Map<String, Object>> roles = new ArrayList<>();
         List<Map<String, Object>> modulos = new ArrayList<>();
         Set<Integer> moduloIdsIncluidos = new LinkedHashSet<>();
 
-        for (RolEntity rol : rolesEntities) {
-            List<Integer> moduloIds = rol.getRolId() != null && rol.getRolId() == ADMIN_ROLE_ID
-                    ? List.of()
-                    : moduloIdsPorRol.getOrDefault(rol.getRolId(), List.of());
+        Integer rolId = rolesIds.get(0);
+        RolEntity rol = rolRepository.findById(rolId).orElse(null);
+        String nombreRol = rol != null ? rol.getNombre() : null;
+        List<Integer> moduloIds = administrador
+                ? List.of()
+                : moduloIdsPorRol.getOrDefault(rolId, List.of());
 
-            List<Map<String, Object>> modulosDelRol = moduloIds.stream()
-                    .map(modulosPorId::get)
-                    .filter(java.util.Objects::nonNull)
-                    .map(this::mapearModulo)
-                    .toList();
-
-            Map<String, Object> role = new LinkedHashMap<>();
-            role.put("rolId", rol.getRolId());
-            role.put("nombre", rol.getNombre());
-            role.put("modulos", modulosDelRol);
-            roles.add(role);
-
-            for (Integer moduloId : moduloIds) {
-                if (moduloIdsIncluidos.add(moduloId) && modulosPorId.containsKey(moduloId)) {
-                    modulos.add(mapearModulo(modulosPorId.get(moduloId)));
-                }
+        for (Integer moduloId : moduloIds) {
+            if (moduloIdsIncluidos.add(moduloId) && modulosPorId.containsKey(moduloId)) {
+                modulos.add(mapearModulo(modulosPorId.get(moduloId)));
             }
         }
 
-        String token = jwtService.generateToken(usuario, roles, modulos);
+        String token = jwtService.generateToken(
+                usuario,
+                rolId,
+                nombreRol,
+                modulos);
         return ResponseEntity.ok(new LoginResponse(true, MSG_LOGIN_CORRECTO,
                 HttpStatus.OK.value(), token));
     }

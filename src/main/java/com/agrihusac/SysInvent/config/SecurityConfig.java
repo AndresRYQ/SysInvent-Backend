@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.agrihusac.SysInvent.security.JwtAccessDeniedHandler;
 import com.agrihusac.SysInvent.security.JwtAuthenticationEntryPoint;
 import com.agrihusac.SysInvent.security.JwtAuthenticationFilter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 @Configuration
 @EnableMethodSecurity
@@ -32,6 +33,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -42,6 +44,9 @@ public class SecurityConfig {
                 )
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(requestCache -> requestCache.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(formLogin -> formLogin.disable())
                 .exceptionHandling(exceptionHandling -> exceptionHandling

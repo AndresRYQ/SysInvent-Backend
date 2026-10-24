@@ -2,10 +2,7 @@ package com.agrihusac.SysInvent.model.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +32,6 @@ public class ActualizarUsuarioRequest {
     @Email(message = "{message.email}")
     private String email;
 
-    @NotEmpty(message = "{message.required}")
-    @Size(min = 1, max = 1, message = "El usuario debe tener exactamente un rol")
-    private List<@NotNull(message = "{message.required}") Integer> rolesIds;
+    @NotNull(message = "{message.required}")
+    private Integer rolId;
 }

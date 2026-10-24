@@ -7,4 +7,6 @@ public interface RolProjection {
     String getNombre();
 
     String getDescripcion();
+
+    Boolean getActivo();
 }

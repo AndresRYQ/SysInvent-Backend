@@ -2,7 +2,7 @@ package com.agrihusac.SysInvent.service.impl;
 
 import com.agrihusac.SysInvent.model.entity.RolEntity;
 import com.agrihusac.SysInvent.model.entity.RolModuloEntity;
-import com.agrihusac.SysInvent.model.mapper.GlobalMapper;
+import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
 import com.agrihusac.SysInvent.model.request.ActualizarRolRequest;
 import com.agrihusac.SysInvent.model.request.RolRequest;
 import com.agrihusac.SysInvent.model.response.RolResponse;
@@ -38,7 +38,7 @@ public class RolServiceImpl implements RolService {
     private final RolRepository rolRepository;
     private final RolModuloRepository rolModuloRepository;
     private final ModuloRepository moduloRepository;
-    private final GlobalMapper globalMapper;
+    private final UsuarioRolRepository usuarioRolRepository;
 
     @Override
     @Transactional
@@ -125,9 +125,41 @@ public class RolServiceImpl implements RolService {
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<RolResponse> listarRoles(String nombre, Pageable pageable) {
-        Page<RolResponse> roles = rolRepository.listarRoles(nombre, pageable)
-                .map(projection -> globalMapper.map(projection, RolResponse.class));
+    public CustomPage<RolResponse> listarRoles(
+            String nombre,
+            Pageable pageable
+    ) {
+        Page<RolResponse> roles =
+                rolRepository.listarRoles(nombre, pageable)
+                        .map(projection -> {
+                            List<Integer> modulos =
+                                    rolModuloRepository
+                                            .findAllByRolIdAndActivoTrue(
+                                                    projection.getRolId()
+                                            )
+                                            .stream()
+                                            .map(RolModuloEntity::getModuloId)
+                                            .filter(java.util.Objects::nonNull)
+                                            .distinct()
+                                            .sorted()
+                                            .toList();
+
+                            long usuarios =
+                                    usuarioRolRepository
+                                            .countByRolIdAndActivoTrue(
+                                                    projection.getRolId()
+                                            );
+
+                            return RolResponse.builder()
+                                    .rolId(projection.getRolId())
+                                    .nombre(projection.getNombre())
+                                    .descripcion(projection.getDescripcion())
+                                    .activo(projection.getActivo())
+                                    .usuarios(usuarios)
+                                    .modulos(modulos)
+                                    .build();
+                        });
+
         return new CustomPage<>(roles);
     }
 }

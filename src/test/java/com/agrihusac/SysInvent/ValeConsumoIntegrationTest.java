@@ -186,7 +186,7 @@ class ValeConsumoIntegrationTest {
 
         mockMvc.perform(get("/api/vales-consumo"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data").isArray());
+                .andExpect(jsonPath("$.datos").isArray());
     }
 
     private String payload(String cantidad) {
