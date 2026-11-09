@@ -25,7 +25,7 @@ public class BrevoCorreoServiceImpl implements CorreoService {
 
     public BrevoCorreoServiceImpl(
             @Value("${brevo.enabled:false}") boolean habilitado,
-            @Value("${brevo.api-url}") String apiUrl,
+            @Value("${brevo.api-url:https://api.brevo.com/v3/smtp/email}") String apiUrl,
             @Value("${brevo.api-key:}") String apiKey,
             @Value("${brevo.sender.email:}") String remitenteEmail,
             @Value("${brevo.sender.name:SysInvent}") String remitenteNombre) {
