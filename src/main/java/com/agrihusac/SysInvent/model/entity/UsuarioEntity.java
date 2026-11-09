@@ -38,7 +38,7 @@ public class UsuarioEntity extends AuditoriaEntity {
     @Column(name = "ape_materno")
     private String apeMaterno;
 
-    @Column(name = "dni")
+    @Column(name = "dni", length = 8)
     private String dni;
 
     @Column(name = "codigo")

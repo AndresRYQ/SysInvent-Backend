@@ -37,7 +37,7 @@ BEGIN
         nombres VARCHAR(255) NULL,
         ape_paterno VARCHAR(255) NULL,
         ape_materno VARCHAR(255) NULL,
-        dni VARCHAR(255) NULL,
+        dni VARCHAR(8) NULL,
         codigo VARCHAR(255) NULL,
         email VARCHAR(255) NULL,
         contrasena VARCHAR(255) NULL,

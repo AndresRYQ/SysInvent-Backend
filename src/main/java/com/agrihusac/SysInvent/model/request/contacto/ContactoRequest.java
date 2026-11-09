@@ -11,7 +11,8 @@ public record ContactoRequest(
         String nombreCompleto,
         @Size(max = 150, message = "Longitud maxima: 150")
         String cargo,
-        @Size(max = 30, message = "Longitud maxima: 30")
+        @Pattern(regexp = "9\\d{8}", message = "El telefono debe tener 9 digitos y comenzar con 9")
+        @Size(max = 9, message = "Longitud maxima: 9")
         String telefono,
         @Size(max = 150, message = "Longitud maxima: 150")
         @Email(message = "El correo no es valido")

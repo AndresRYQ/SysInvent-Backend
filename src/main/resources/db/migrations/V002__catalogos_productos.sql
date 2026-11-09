@@ -62,10 +62,10 @@ BEGIN
         fecha_registro DATE NULL,
         fecha_modificacion DATE NULL,
         activo BIT NOT NULL CONSTRAINT df_proveedor_activo DEFAULT (1),
-        ruc VARCHAR(20) NOT NULL,
+        ruc VARCHAR(11) NOT NULL,
         razon_social VARCHAR(255) NOT NULL,
         correo VARCHAR(150) NULL,
-        telefono VARCHAR(30) NULL,
+        telefono VARCHAR(9) NULL,
         direccion VARCHAR(255) NULL,
         CONSTRAINT pk_proveedor PRIMARY KEY (proveedor_id),
         CONSTRAINT uq_proveedor_ruc UNIQUE (ruc)
@@ -83,7 +83,7 @@ BEGIN
         proveedor_id INT NOT NULL,
         nombre_completo VARCHAR(255) NOT NULL,
         cargo VARCHAR(150) NULL,
-        telefono VARCHAR(30) NULL,
+        telefono VARCHAR(9) NULL,
         correo VARCHAR(150) NULL,
         CONSTRAINT pk_contacto PRIMARY KEY (contacto_id),
         CONSTRAINT fk_contacto_proveedor FOREIGN KEY (proveedor_id)
