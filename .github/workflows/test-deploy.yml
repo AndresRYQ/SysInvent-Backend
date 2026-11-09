@@ -32,14 +32,8 @@ jobs:
       - name: Grant execute permission to Maven wrapper
         run: chmod +x mvnw
 
-      - name: Compile backend
-        run: ./mvnw clean compile
-
-      - name: Run full test suite
-        run: ./mvnw test
-
-      - name: Run login smoke test
-        run: ./mvnw test -Dtest=LoginIntegrationTest
+      - name: Run backend tests
+        run: ./mvnw -B clean test
 
   deploy:
     name: Deploy to Render
@@ -52,6 +46,6 @@ jobs:
         env:
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          curl -X POST "$RENDER_DEPLOY_HOOK" \
-            -H "Content-Type: application/json" \
-            --fail
+          test -n "$RENDER_DEPLOY_HOOK"
+          curl --fail --request POST "$RENDER_DEPLOY_HOOK" \
+            --header "Content-Type: application/json"
