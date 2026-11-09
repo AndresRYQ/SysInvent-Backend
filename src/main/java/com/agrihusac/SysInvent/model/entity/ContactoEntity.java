@@ -24,7 +24,7 @@ public class ContactoEntity extends AuditoriaEntity {
     private String nombreCompleto;
     @Column(name = "cargo", length = 150, nullable = true)
     private String cargo;
-    @Column(name = "telefono", length = 30, nullable = true)
+    @Column(name = "telefono", length = 9, nullable = true)
     private String telefono;
     @Column(name = "correo", length = 150, nullable = true)
     private String correo;

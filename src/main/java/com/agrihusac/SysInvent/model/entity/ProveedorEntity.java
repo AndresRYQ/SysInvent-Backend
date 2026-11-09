@@ -16,13 +16,13 @@ public class ProveedorEntity extends AuditoriaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "proveedor_id")
     private Integer proveedorId;
-    @Column(name = "ruc", unique = true, length = 20, nullable = false)
+    @Column(name = "ruc", unique = true, length = 11, nullable = false)
     private String ruc;
     @Column(name = "razon_social", length = 255, nullable = false)
     private String razonSocial;
     @Column(name = "correo", length = 150, nullable = true)
     private String correo;
-    @Column(name = "telefono", length = 30, nullable = true)
+    @Column(name = "telefono", length = 9, nullable = true)
     private String telefono;
     @Column(name = "direccion", length = 255, nullable = true)
     private String direccion;
