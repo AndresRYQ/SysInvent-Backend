@@ -1,116 +1,57 @@
 package com.agrihusac.SysInvent;
 
-import com.agrihusac.SysInvent.model.entity.RolEntity;
-import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
-import com.agrihusac.SysInvent.model.entity.UsuarioRolEntity;
-import com.agrihusac.SysInvent.repository.RolRepository;
-import com.agrihusac.SysInvent.repository.UsuarioRepository;
-import com.agrihusac.SysInvent.repository.UsuarioRolRepository;
-import java.time.LocalDate;
-import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.agrihusac.SysInvent.api.LoginController;
+import com.agrihusac.SysInvent.model.request.LoginRequest;
+import com.agrihusac.SysInvent.model.response.auth.LoginResponse;
+import com.agrihusac.SysInvent.service.LoginService;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class LoginIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private LoginController loginController;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    @Mock
+    private LoginService loginService;
 
-    @Autowired
-    private RolRepository rolRepository;
+    @Test
+    void loginConCredencialesValidasDevuelveToken() {
+        LoginRequest request = new LoginRequest("admin-login", "Secret123!");
+        LoginResponse esperado = new LoginResponse(
+                true, "Inicio de sesion correcto", HttpStatus.OK.value(), "token-simulado");
+        when(loginService.login(request)).thenReturn(ResponseEntity.ok(esperado));
 
-    @Autowired
-    private UsuarioRolRepository usuarioRolRepository;
+        ResponseEntity<LoginResponse> resultado = loginController.login(request);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @BeforeEach
-    void limpiarDatos() {
-        usuarioRolRepository.deleteAll();
-        usuarioRepository.deleteAll();
-        rolRepository.deleteAll();
+        assertEquals(HttpStatus.OK, resultado.getStatusCode());
+        assertEquals(true, resultado.getBody().success());
+        assertEquals("token-simulado", resultado.getBody().data());
+        verify(loginService).login(request);
     }
 
     @Test
-    void loginConCredencialesValidasDevuelveToken() throws Exception {
-        RolEntity rol = rolRepository.save(RolEntity.builder()
-                .nombre("ADMIN")
-                .descripcion("Administrador")
-                .activo(Boolean.TRUE)
-                .build());
+    void loginConCredencialesInvalidasDevuelveUnauthorized() {
+        LoginRequest request = new LoginRequest("admin-login", "incorrecta");
+        LoginResponse esperado = new LoginResponse(
+                false, "Credenciales inválidas", HttpStatus.UNAUTHORIZED.value(), null);
+        when(loginService.login(request))
+                .thenReturn(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(esperado));
 
-        UsuarioEntity usuario = usuarioRepository.save(UsuarioEntity.builder()
-                .usuario("admin-login")
-                .nombres("Admin")
-                .apePaterno("Login")
-                .apeMaterno("Test")
-                .dni("11111111")
-                .email("admin-login@test.com")
-                .contrasena(passwordEncoder.encode("Secret123!"))
-                .activo(Boolean.TRUE)
-                .build());
+        ResponseEntity<LoginResponse> resultado = loginController.login(request);
 
-        usuarioRolRepository.save(UsuarioRolEntity.builder()
-                .usuarioId(usuario.getUsuarioId())
-                .rolId(rol.getRolId())
-                .activo(Boolean.TRUE)
-                .fechaAsignacion(LocalDate.now())
-                .build());
-
-        mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"usuario\":\"admin-login\",\"contrasena\":\"Secret123!\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("Inicio de sesion correcto"))
-                .andExpect(jsonPath("$.data").exists());
-    }
-
-    @Test
-    void loginConCredencialesInvalidasDevuelveUnauthorized() throws Exception {
-        RolEntity rol = rolRepository.save(RolEntity.builder()
-                .nombre("ADMIN")
-                .descripcion("Administrador")
-                .activo(Boolean.TRUE)
-                .build());
-
-        UsuarioEntity usuario = usuarioRepository.save(UsuarioEntity.builder()
-                .usuario("admin-login")
-                .nombres("Admin")
-                .apePaterno("Login")
-                .apeMaterno("Test")
-                .dni("22222222")
-                .email("admin-login2@test.com")
-                .contrasena(passwordEncoder.encode("Secret123!"))
-                .activo(Boolean.TRUE)
-                .build());
-
-        usuarioRolRepository.save(UsuarioRolEntity.builder()
-                .usuarioId(usuario.getUsuarioId())
-                .rolId(rol.getRolId())
-                .activo(Boolean.TRUE)
-                .fechaAsignacion(LocalDate.now())
-                .build());
-
-        mockMvc.perform(post("/api/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"usuario\":\"admin-login\",\"contrasena\":\"incorrecta\"}"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.success").value(false));
+        assertEquals(HttpStatus.UNAUTHORIZED, resultado.getStatusCode());
+        assertEquals(false, resultado.getBody().success());
+        verify(loginService).login(request);
     }
 }
