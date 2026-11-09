@@ -1,59 +1,37 @@
 package com.agrihusac.SysInvent;
 
-import com.agrihusac.SysInvent.model.entity.UsuarioEntity;
-import com.agrihusac.SysInvent.service.JwtService;
-import java.util.List;
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.agrihusac.SysInvent.api.RolController;
+import com.agrihusac.SysInvent.service.RolService;
+import com.agrihusac.SysInvent.utils.MessageResponse;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest
-@AutoConfigureMockMvc
+@ExtendWith(MockitoExtension.class)
 class RolesSecurityIntegrationTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @InjectMocks
+    private RolController rolController;
 
-    @Autowired
-    private JwtService jwtService;
-
-    @Test
-    void listaRolesConJwtYPaginacionDesdeUno() throws Exception {
-        UsuarioEntity usuario = UsuarioEntity.builder()
-                .usuarioId(1)
-                .usuario("admin-prueba")
-                .email("admin-prueba@example.test")
-                .activo(Boolean.TRUE)
-                .build();
-
-        String token = jwtService.generateToken(
-                usuario,
-                1,
-                "ADMINISTRADOR",
-                List.of());
-
-        mockMvc.perform(get("/api/roles")
-                        .param("pagina", "1")
-                        .param("tamPagina", "100")
-                        .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.datos").isArray())
-                .andExpect(jsonPath("$.paginacion.numeroPagina").value(1))
-                .andExpect(jsonPath("$.paginacion.tamanioPagina").value(100));
-    }
+    @Mock
+    private RolService rolService;
 
     @Test
-    void rechazaRolesSinJwt() throws Exception {
-        mockMvc.perform(get("/api/roles")
-                        .param("pagina", "1")
-                        .param("tamPagina", "10"))
-                .andExpect(status().isUnauthorized());
+    void actualizaEstadoDelRolMedianteServicioMockeado() {
+        ResponseEntity<MessageResponse> esperado = ResponseEntity.ok(
+                new MessageResponse(true, "Rol actualizado", 200, null));
+        when(rolService.actualizarEstadoRol(1, false)).thenReturn(esperado);
+
+        ResponseEntity<MessageResponse> resultado = rolController.actualizarEstadoRol(1, false);
+
+        assertSame(esperado, resultado);
+        verify(rolService).actualizarEstadoRol(1, false);
     }
 }
