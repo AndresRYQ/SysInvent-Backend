@@ -9,7 +9,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,9 +25,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String MODULE_AUTHORITY_PREFIX = "MODULE_";
     private static final int ADMIN_ROLE_ID = 1;
+
     public static final String JWT_ERROR_ATTRIBUTE = "jwtError";
 
     private final JwtService jwtService;
@@ -33,77 +41,160 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
 
         if (authorization != null && !authorization.isBlank()) {
-            if (authorization.regionMatches(true, 0, BEARER_PREFIX, 0, BEARER_PREFIX.length())) {
-                String token = authorization.substring(BEARER_PREFIX.length()).trim();
+            if (authorization.regionMatches(
+                    true,
+                    0,
+                    BEARER_PREFIX,
+                    0,
+                    BEARER_PREFIX.length()
+            )) {
+                String token = authorization
+                        .substring(BEARER_PREFIX.length())
+                        .trim();
 
                 if (token.isBlank()) {
-                    request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token Bearer está vacío");
+                    request.setAttribute(
+                            JWT_ERROR_ATTRIBUTE,
+                            "El token Bearer está vacío"
+                    );
                 } else {
                     autenticar(token, request);
                 }
             } else {
                 request.setAttribute(
                         JWT_ERROR_ATTRIBUTE,
-                        "El encabezado Authorization debe usar el formato Bearer");
+                        "El encabezado Authorization debe usar el formato Bearer"
+                );
             }
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void autenticar(String token, HttpServletRequest request) {
+    private void autenticar(
+            String token,
+            HttpServletRequest request
+    ) {
         try {
             Claims claims = jwtService.parseToken(token);
             String usuario = claims.getSubject();
 
             if (usuario == null || usuario.isBlank()) {
-                request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token no contiene un usuario válido");
+                request.setAttribute(
+                        JWT_ERROR_ATTRIBUTE,
+                        "El token no contiene un usuario válido"
+                );
                 return;
             }
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(
-                            usuario, null, obtenerAuthorities(claims));
+                            usuario,
+                            null,
+                            obtenerAuthorities(claims)
+                    );
+
             authentication.setDetails(claims);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authentication);
         } catch (ExpiredJwtException exception) {
             LOGGER.warn("JWT diagnóstico: token expirado");
-            request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token ha expirado");
+            request.setAttribute(
+                    JWT_ERROR_ATTRIBUTE,
+                    "El token ha expirado"
+            );
         } catch (RuntimeException exception) {
             LOGGER.warn(
                     "JWT diagnóstico: token inválido, causa={} - {}",
                     exception.getClass().getSimpleName(),
-                    exception.getMessage());
-            request.setAttribute(JWT_ERROR_ATTRIBUTE, "El token no es válido");
+                    exception.getMessage()
+            );
+            request.setAttribute(
+                    JWT_ERROR_ATTRIBUTE,
+                    "El token no es válido"
+            );
         }
     }
 
-    private List<SimpleGrantedAuthority> obtenerAuthorities(Claims claims) {
-        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+    private List<SimpleGrantedAuthority> obtenerAuthorities(
+            Claims claims
+    ) {
+        Set<SimpleGrantedAuthority> authorities =
+                new LinkedHashSet<>();
+
         if (esAdministrador(claims.get("rolId"))) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            authorities.add(
+                    new SimpleGrantedAuthority("ROLE_ADMIN")
+            );
         }
 
-        return authorities;
+        agregarAuthoritiesDeModulos(authorities, claims);
+
+        return new ArrayList<>(authorities);
+    }
+
+    private void agregarAuthoritiesDeModulos(
+            Set<SimpleGrantedAuthority> authorities,
+            Claims claims
+    ) {
+        Object modulosClaim = claims.get("modulos");
+
+        if (!(modulosClaim instanceof List<?> modulos)) {
+            return;
+        }
+
+        for (Object elemento : modulos) {
+            if (!(elemento instanceof Map<?, ?> modulo)) {
+                continue;
+            }
+
+            Object rutaClaim = modulo.get("ruta");
+
+            if (!(rutaClaim instanceof String ruta)
+                    || ruta.isBlank()) {
+                continue;
+            }
+
+            String rutaNormalizada =
+                    ruta.trim().toLowerCase(Locale.ROOT);
+
+            if (!rutaNormalizada.startsWith("/")) {
+                rutaNormalizada = "/" + rutaNormalizada;
+            }
+
+            authorities.add(
+                    new SimpleGrantedAuthority(
+                            MODULE_AUTHORITY_PREFIX
+                                    + rutaNormalizada
+                    )
+            );
+        }
     }
 
     private boolean esAdministrador(Object rolId) {
         if (rolId instanceof Number number) {
             return number.intValue() == ADMIN_ROLE_ID;
         }
+
         if (rolId instanceof String value) {
             try {
-                return Integer.parseInt(value) == ADMIN_ROLE_ID;
+                return Integer.parseInt(value)
+                        == ADMIN_ROLE_ID;
             } catch (NumberFormatException ignored) {
                 return false;
             }
         }
+
         return false;
     }
 }

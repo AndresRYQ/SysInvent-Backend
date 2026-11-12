@@ -39,7 +39,33 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/usuarios/perfil",
+                                "/api/usuarios/perfil/**"
+                        ).authenticated()
+                        .requestMatchers("/api/usuarios/**")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/usuarios"
+                        )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/roles/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/roles",
+                                "MODULE_/usuarios"
+                        )
+                        .requestMatchers("/api/roles/**")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/roles"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())
