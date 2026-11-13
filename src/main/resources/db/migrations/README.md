@@ -17,6 +17,10 @@ Los scripts deben ejecutarse respetando el número de versión:
 | V002 | `V002__catalogos_productos.sql` | Crea catálogos, proveedores, contactos y productos. |
 | V003 | `V003__operaciones_almacen.sql` | Crea ingresos, vales, distribuciones, kardex y bitácora. |
 | V004 | `V004__modulos_datos_iniciales.sql` | Crea módulos, permisos y datos iniciales. |
+| V005 | `V005__ajustar_longitudes_proveedor.sql` | Ajusta longitudes de RUC y teléfono del proveedor. |
+| V006 | `V006__ajustar_longitudes_contactos.sql` | Ajusta la longitud del teléfono de contactos. |
+| V007 | `V007__ajustar_longitud_dni.sql` | Ajusta la longitud del DNI de usuarios. |
+| V008 | `V008__modulo_reporte_kardex.sql` | Registra el módulo "Reporte de Kardex" y lo asigna al administrador. |
 
 ## Procedimiento de ejecución
 
@@ -60,6 +64,12 @@ Los scripts incluyen:
 | V002 | Desarrollo | Pendiente | Equipo SysInvent | Pendiente |
 | V003 | Desarrollo | Pendiente | Equipo SysInvent | Pendiente |
 | V004 | Desarrollo | Pendiente | Equipo SysInvent | Pendiente |
+
+## MySQL 8
+
+Para desarrollo con MySQL se usa el script consolidado e idempotente
+`../mysql/schema_mysql.sql`, equivalente a V001..V008. Los triggers de SQL
+Server se reemplazan por triggers `BEFORE INSERT/UPDATE/DELETE` con `SIGNAL`.
 
 ## Esquema consolidado
 
