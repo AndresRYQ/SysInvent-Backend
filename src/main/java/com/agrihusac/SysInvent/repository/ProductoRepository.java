@@ -23,6 +23,13 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
     @Query("""
             select p from ProductoEntity p
             join fetch p.unidadMedida
+            order by p.nombre asc
+            """)
+    List<ProductoEntity> findAllConUnidadMedida();
+
+    @Query("""
+            select p from ProductoEntity p
+            join fetch p.unidadMedida
             where p.activo = true
               and p.tipoProductoId = :tipoProductoId
               and p.proveedorId = :proveedorId

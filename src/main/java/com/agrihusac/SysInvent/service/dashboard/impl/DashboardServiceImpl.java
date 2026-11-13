@@ -5,6 +5,7 @@ import com.agrihusac.SysInvent.model.projection.DashboardResumenProjection;
 import com.agrihusac.SysInvent.model.response.dashboard.DashboardResponse;
 import com.agrihusac.SysInvent.repository.DashboardRepository;
 import com.agrihusac.SysInvent.service.dashboard.DashboardService;
+import com.agrihusac.SysInvent.utils.TipoMovimientoKardex;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +27,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm");
-    private static final Set<String> MOVIMIENTOS_ENTRADA = Set.of("ENTRADA_INGRESO", "AJUSTE_ENTRADA");
 
     private final DashboardRepository dashboardRepository;
     private final Clock clock;
@@ -93,27 +92,13 @@ public class DashboardServiceImpl implements DashboardService {
         return new DashboardResponse.ActividadReciente(
                 item.getFechaMovimiento() == null ? null : item.getFechaMovimiento().format(FORMATO_FECHA),
                 item.getFechaMovimiento() == null ? null : item.getFechaMovimiento().format(FORMATO_HORA),
-                MOVIMIENTOS_ENTRADA.contains(tipoMovimiento) ? "Ingreso" : "Vale",
+                TipoMovimientoKardex.esEntrada(tipoMovimiento) ? "Ingreso" : "Vale",
                 tipoMovimiento,
-                describirMovimiento(tipoMovimiento),
+                TipoMovimientoKardex.describir(tipoMovimiento),
                 item.getDocumento(),
                 item.getProducto(),
                 item.getCantidad(),
                 nombreResponsable(item));
-    }
-
-    static String describirMovimiento(String tipoMovimiento) {
-        if (tipoMovimiento == null) {
-            return "Movimiento";
-        }
-        return switch (tipoMovimiento) {
-            case "ENTRADA_INGRESO" -> "Ingreso de almacén";
-            case "SALIDA_VALE" -> "Salida por vale";
-            case "AJUSTE_ENTRADA" -> "Ajuste de entrada";
-            case "AJUSTE_SALIDA" -> "Ajuste de salida";
-            case "ANULACION_ENTRADA" -> "Anulación de ingreso";
-            default -> tipoMovimiento;
-        };
     }
 
     private String nombreResponsable(DashboardActividadProjection item) {
