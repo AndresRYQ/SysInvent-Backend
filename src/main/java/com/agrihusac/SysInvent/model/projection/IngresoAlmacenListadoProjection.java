@@ -10,7 +10,6 @@ public interface IngresoAlmacenListadoProjection {
     String getContacto();
     String getDocumento();
     Integer getProductos();
-    String getCantidadIngresada();
     BigDecimal getTotal();
     String getEstado();
 }

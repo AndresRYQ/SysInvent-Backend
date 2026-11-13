@@ -74,7 +74,10 @@ public class BitacoraServiceImpl implements BitacoraService {
     @Transactional(readOnly = true)
     public CustomPage<BitacoraProjection> listar(String busqueda, String modulo, String accion,
                                                  LocalDate fechaDesde, LocalDate fechaHasta, Pageable pageable) {
-        return new CustomPage<>(bitacoraRepository.listar(busqueda, modulo, accion, fechaDesde, fechaHasta, pageable));
+        // Se envía el día siguiente para filtrar con '<' de forma portable (sin DATEADD).
+        LocalDate fechaHastaExclusiva = fechaHasta == null ? null : fechaHasta.plusDays(1);
+        return new CustomPage<>(bitacoraRepository.listar(
+                busqueda, modulo, accion, fechaDesde, fechaHastaExclusiva, pageable));
     }
 
     private Integer claimInteger(String name) {

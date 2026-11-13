@@ -179,18 +179,45 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
     public CustomPage<IngresoAlmacenListadoResponse> listar(String busqueda, Integer proveedorId,
                                                             String estado, LocalDate fechaDesde,
                                                             LocalDate fechaHasta, Pageable pageable) {
-        Page<IngresoAlmacenListadoResponse> page = ingresoAlmacenRepository
+        Page<IngresoAlmacenListadoProjection> resultado = ingresoAlmacenRepository
                 .listarResumen(normalizarFiltro(busqueda), proveedorId, normalizarFiltro(estado),
-                        fechaDesde, fechaHasta, pageable)
-                .map(this::respuestaListado);
+                        fechaDesde, fechaHasta, pageable);
+        Map<Integer, String> cantidades = cantidadesIngresadas(resultado.getContent().stream()
+                .map(IngresoAlmacenListadoProjection::getIngresoAlmacenId)
+                .toList());
+        Page<IngresoAlmacenListadoResponse> page = resultado
+                .map(projection -> respuestaListado(projection, cantidades));
         return new CustomPage<>(page);
     }
 
-    private IngresoAlmacenListadoResponse respuestaListado(IngresoAlmacenListadoProjection projection) {
+    /**
+     * Arma el texto "Producto: cantidad unidad, ..." de cada ingreso. Antes se
+     * calculaba con STRING_AGG/FORMAT (solo SQL Server); ahora es portable.
+     */
+    private Map<Integer, String> cantidadesIngresadas(List<Integer> ingresoIds) {
+        if (ingresoIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<Integer, List<String>> partes = new HashMap<>();
+        for (DetalleIngresoAlmacenEntity detalle : ingresoAlmacenRepository.buscarDetallesConProducto(ingresoIds)) {
+            ProductoEntity producto = detalle.getProducto();
+            String texto = producto.getNombre() + ": "
+                    + detalle.getCantidad().stripTrailingZeros().toPlainString() + " "
+                    + producto.getUnidadMedida().getNombre();
+            partes.computeIfAbsent(detalle.getIngreso().getIngresoAlmacenId(), id -> new ArrayList<>()).add(texto);
+        }
+        Map<Integer, String> resultado = new HashMap<>();
+        partes.forEach((id, textos) -> resultado.put(id, String.join(", ", textos)));
+        return resultado;
+    }
+
+    private IngresoAlmacenListadoResponse respuestaListado(IngresoAlmacenListadoProjection projection,
+                                                           Map<Integer, String> cantidades) {
         return new IngresoAlmacenListadoResponse(
                 projection.getIngresoAlmacenId(), projection.getNumeroIngreso(),
                 projection.getFechaIngreso(), projection.getProveedor(), projection.getContacto(),
-                projection.getDocumento(), projection.getProductos(), projection.getCantidadIngresada(),
+                projection.getDocumento(), projection.getProductos(),
+                cantidades.getOrDefault(projection.getIngresoAlmacenId(), ""),
                 projection.getTotal(), projection.getEstado());
     }
 
