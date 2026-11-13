@@ -12,7 +12,8 @@ import org.springframework.data.repository.query.Param;
 public interface BitacoraRepository extends JpaRepository<BitacoraEntity, Long> {
 
     @Query(value = """
-            SELECT CONVERT(VARCHAR(10), b.fecha_hora, 103) + ' ' + CONVERT(VARCHAR(8), b.fecha_hora, 108) AS fechaHora,
+            SELECT CONCAT(CONCAT(RIGHT(CONCAT('0', DAY(b.fecha_hora)), 2), '/', RIGHT(CONCAT('0', MONTH(b.fecha_hora)), 2), '/', YEAR(b.fecha_hora)),
+                          ' ', LEFT(CAST(CAST(b.fecha_hora AS TIME) AS CHAR(20)), 8)) AS fechaHora,
                    LTRIM(RTRIM(CONCAT(u.nombres, ' ', u.ape_paterno, ' ', u.ape_materno))) AS nombreUsuario,
                    r.nombre AS nombreRol,
                    b.modulo AS modulo,
@@ -27,7 +28,7 @@ public interface BitacoraRepository extends JpaRepository<BitacoraEntity, Long> 
               AND (:modulo IS NULL OR :modulo = '' OR b.modulo = :modulo)
               AND (:accion IS NULL OR :accion = '' OR b.accion = :accion)
               AND (:fechaDesde IS NULL OR b.fecha_hora >= :fechaDesde)
-              AND (:fechaHasta IS NULL OR b.fecha_hora < DATEADD(day, 1, :fechaHasta))
+              AND (:fechaHastaExclusiva IS NULL OR b.fecha_hora < :fechaHastaExclusiva)
             ORDER BY b.fecha_hora DESC, b.bitacora_id DESC
             """,
             countQuery = """
@@ -40,13 +41,13 @@ public interface BitacoraRepository extends JpaRepository<BitacoraEntity, Long> 
                       AND (:modulo IS NULL OR :modulo = '' OR b.modulo = :modulo)
                       AND (:accion IS NULL OR :accion = '' OR b.accion = :accion)
                       AND (:fechaDesde IS NULL OR b.fecha_hora >= :fechaDesde)
-                      AND (:fechaHasta IS NULL OR b.fecha_hora < DATEADD(day, 1, :fechaHasta))
+                      AND (:fechaHastaExclusiva IS NULL OR b.fecha_hora < :fechaHastaExclusiva)
                     """,
             nativeQuery = true)
     Page<BitacoraProjection> listar(@Param("busqueda") String busqueda,
                                     @Param("modulo") String modulo,
                                     @Param("accion") String accion,
                                     @Param("fechaDesde") LocalDate fechaDesde,
-                                    @Param("fechaHasta") LocalDate fechaHasta,
+                                    @Param("fechaHastaExclusiva") LocalDate fechaHastaExclusiva,
                                     Pageable pageable);
 }

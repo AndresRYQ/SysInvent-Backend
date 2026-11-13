@@ -119,4 +119,6 @@ public interface UsuarioRepository
 
     Optional<UsuarioEntity>
     findByUsuarioAndActivoTrue(String usuario);
+
+    java.util.List<UsuarioEntity> findByUsuarioIn(java.util.Collection<String> usuarios);
 }

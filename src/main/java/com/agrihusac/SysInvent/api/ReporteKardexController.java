@@ -1,6 +1,8 @@
 package com.agrihusac.SysInvent.api;
 
-import com.agrihusac.SysInvent.service.reporte.KardexService;
+import com.agrihusac.SysInvent.model.request.reporte.ReporteKardexFiltro;
+import com.agrihusac.SysInvent.model.response.reporte.ReporteKardexResponse;
+import com.agrihusac.SysInvent.service.reporte.ReporteKardexService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,10 +26,12 @@ import java.time.LocalDate;
 @Tag(name = "Reportes", description = "Reportes de inventario")
 public class ReporteKardexController {
 
-    private final KardexService kardexService;
+    private final ReporteKardexService reporteKardexService;
 
     @GetMapping
-    @Operation(summary = "Generar reporte de Kardex", description = "Filtra movimientos por producto, fechas y tipo")
+    @Operation(summary = "Generar reporte de Kardex",
+            description = "Devuelve resumen, movimientos (más recientes primero) y stock actual. "
+                    + "tipoMovimiento acepta ENTRADA, SALIDA o un tipo exacto del Kardex.")
     public ResponseEntity<Object> obtener(
             @RequestParam(required = false) @Min(1) Integer productoId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
@@ -37,8 +41,11 @@ public class ReporteKardexController {
             return MessageResponse.setResponse(false, HttpStatus.BAD_REQUEST,
                     "La fecha inicial debe ser anterior o igual a la fecha final.");
         }
-        return MessageResponse.setResponse(true, HttpStatus.OK,
-                "Reporte de Kardex generado correctamente.",
-                kardexService.buscar(productoId, desde, hasta, tipoMovimiento));
+        ReporteKardexResponse reporte = reporteKardexService.generar(
+                new ReporteKardexFiltro(productoId, desde, hasta, tipoMovimiento));
+        String mensaje = reporte.movimientos().isEmpty()
+                ? "No se encontraron movimientos para los filtros seleccionados."
+                : "Reporte de Kardex generado correctamente.";
+        return MessageResponse.setResponse(true, HttpStatus.OK, mensaje, reporte);
     }
 }

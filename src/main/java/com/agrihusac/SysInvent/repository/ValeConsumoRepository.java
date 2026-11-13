@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public interface ValeConsumoRepository extends JpaRepository<ValeConsumoEntity, Integer> {
 
     @Query(value = """
-            SELECT CAST(ROW_NUMBER() OVER (ORDER BY SUM(dv.cantidad) DESC, p.nombre ASC) AS INT) AS posicion,
+            SELECT ROW_NUMBER() OVER (ORDER BY SUM(dv.cantidad) DESC, p.nombre ASC) AS posicion,
                    p.producto_id AS productoId,
                    p.codigo AS codigoProducto,
                    p.nombre AS producto,
@@ -37,7 +37,8 @@ public interface ValeConsumoRepository extends JpaRepository<ValeConsumoEntity, 
               INNER JOIN tipo_producto tp ON tp.tipo_producto_id = p.tipo_producto_id
               INNER JOIN categoria cat ON cat.categoria_id = p.categoria_id
               INNER JOIN unidad_medida um ON um.unidad_medida_id = p.unidad_medida_id
-             WHERE (:busqueda = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%'))
+             WHERE v.estado = 'REGISTRADO'
+               AND (:busqueda = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                     OR LOWER(p.codigo) LIKE LOWER(CONCAT('%', :busqueda, '%')))
                AND (:tipoProductoId IS NULL OR p.tipo_producto_id = :tipoProductoId)
                AND (:categoriaId IS NULL OR p.categoria_id = :categoriaId)
@@ -54,7 +55,8 @@ public interface ValeConsumoRepository extends JpaRepository<ValeConsumoEntity, 
               INNER JOIN distribucion_vale_consumo dv
                       ON dv.detalle_vale_consumo_id = det.detalle_vale_consumo_id
               INNER JOIN producto p ON p.producto_id = det.producto_id
-             WHERE (:busqueda = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%'))
+             WHERE v.estado = 'REGISTRADO'
+               AND (:busqueda = '' OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                     OR LOWER(p.codigo) LIKE LOWER(CONCAT('%', :busqueda, '%')))
                AND (:tipoProductoId IS NULL OR p.tipo_producto_id = :tipoProductoId)
                AND (:categoriaId IS NULL OR p.categoria_id = :categoriaId)
@@ -75,7 +77,7 @@ public interface ValeConsumoRepository extends JpaRepository<ValeConsumoEntity, 
     @Query(value = """
             SELECT v.vale_consumo_id AS valeConsumoId,
                    v.numero_vale AS numeroVale,
-                   CONVERT(VARCHAR(10), v.fecha_vale, 103) AS fechaVale,
+                   CONCAT(RIGHT(CONCAT('0', DAY(v.fecha_vale)), 2), '/', RIGHT(CONCAT('0', MONTH(v.fecha_vale)), 2), '/', YEAR(v.fecha_vale)) AS fechaVale,
                    cc.nombre AS centroCosto,
                    v.solicitante AS solicitante,
                    p.codigo AS codigoProducto,

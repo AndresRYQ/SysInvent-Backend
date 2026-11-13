@@ -15,7 +15,7 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
     @Query(value = """
             SELECT i.ingreso_almacen_id AS ingresoAlmacenId,
                    i.numero_ingreso AS numeroIngreso,
-                   CONVERT(VARCHAR(10), i.fecha_ingreso, 103) AS fechaIngreso,
+                   CONCAT(RIGHT(CONCAT('0', DAY(i.fecha_ingreso)), 2), '/', RIGHT(CONCAT('0', MONTH(i.fecha_ingreso)), 2), '/', YEAR(i.fecha_ingreso)) AS fechaIngreso,
                    p.razon_social AS proveedor,
                    CONCAT(td.nombre, ' - ', i.numero_documento) AS documento,
                    tp.nombre AS tipoProducto,
@@ -72,6 +72,20 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
             @Param("fechaDesde") LocalDate fechaDesde,
             @Param("fechaHasta") LocalDate fechaHasta,
             Pageable pageable);
+    /**
+     * Detalles (con producto y unidad) de varios ingresos. Reemplaza a
+     * STRING_AGG/FORMAT, exclusivos de SQL Server, en el listado de ingresos.
+     */
+    @Query("""
+            select d from DetalleIngresoAlmacenEntity d
+            join fetch d.producto p
+            join fetch p.unidadMedida
+            where d.ingreso.ingresoAlmacenId in :ingresoIds
+            order by d.detalleIngresoAlmacenId asc
+            """)
+    java.util.List<com.agrihusac.SysInvent.model.entity.DetalleIngresoAlmacenEntity> buscarDetallesConProducto(
+            @Param("ingresoIds") java.util.Collection<Integer> ingresoIds);
+
     boolean existsByProveedor_ProveedorIdAndTipoDocumento_TipoDocumentoIdAndNumeroDocumentoIgnoreCase(
             Integer proveedorId, Integer tipoDocumentoId, String numeroDocumento);
 
@@ -81,12 +95,11 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
     @Query(value = """
             SELECT i.ingreso_almacen_id AS ingresoAlmacenId,
                    i.numero_ingreso AS numeroIngreso,
-                   CONVERT(VARCHAR(10), i.fecha_ingreso, 103) AS fechaIngreso,
+                   CONCAT(RIGHT(CONCAT('0', DAY(i.fecha_ingreso)), 2), '/', RIGHT(CONCAT('0', MONTH(i.fecha_ingreso)), 2), '/', YEAR(i.fecha_ingreso)) AS fechaIngreso,
                    p.razon_social AS proveedor,
                    c.nombre_completo AS contacto,
                    CONCAT(td.nombre, ' - ', i.numero_documento) AS documento,
                    COUNT(DISTINCT d.producto_id) AS productos,
-                   STRING_AGG(CONCAT(pr.nombre, ': ', FORMAT(d.cantidad, '0.####', 'en-US'), ' ', um.nombre), ', ') AS cantidadIngresada,
                    SUM(d.cantidad * d.precio_unitario) AS total,
                    i.estado AS estado
             FROM ingreso_almacen i
