@@ -2,6 +2,7 @@ package com.agrihusac.SysInvent.model.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,9 +21,11 @@ public class ActualizarRolRequest {
     private Integer rolId;
 
     @NotBlank(message = "{message.required}")
+    @Size(max = 255, message = "{message.longitudmax}")
     private String nombre;
 
     @NotBlank(message = "{message.required}")
+    @Size(max = 255, message = "{message.longitudmax}")
     private String descripcion;
 
     @NotNull(message = "{message.required}")
