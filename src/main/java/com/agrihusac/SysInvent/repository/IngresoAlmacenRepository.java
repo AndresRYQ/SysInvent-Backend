@@ -15,7 +15,7 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
     @Query(value = """
             SELECT i.ingreso_almacen_id AS ingresoAlmacenId,
                    i.numero_ingreso AS numeroIngreso,
-                   CONVERT(VARCHAR(10), i.fecha_ingreso, 103) AS fechaIngreso,
+                   CONCAT(RIGHT(CONCAT('0', DAY(i.fecha_ingreso)), 2), '/', RIGHT(CONCAT('0', MONTH(i.fecha_ingreso)), 2), '/', YEAR(i.fecha_ingreso)) AS fechaIngreso,
                    p.razon_social AS proveedor,
                    CONCAT(td.nombre, ' - ', i.numero_documento) AS documento,
                    tp.nombre AS tipoProducto,
@@ -81,7 +81,7 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
     @Query(value = """
             SELECT i.ingreso_almacen_id AS ingresoAlmacenId,
                    i.numero_ingreso AS numeroIngreso,
-                   CONVERT(VARCHAR(10), i.fecha_ingreso, 103) AS fechaIngreso,
+                   CONCAT(RIGHT(CONCAT('0', DAY(i.fecha_ingreso)), 2), '/', RIGHT(CONCAT('0', MONTH(i.fecha_ingreso)), 2), '/', YEAR(i.fecha_ingreso)) AS fechaIngreso,
                    p.razon_social AS proveedor,
                    c.nombre_completo AS contacto,
                    CONCAT(td.nombre, ' - ', i.numero_documento) AS documento,
