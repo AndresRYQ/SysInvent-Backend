@@ -54,6 +54,26 @@ public class CentroCostoServiceImpl extends AbstractCatalogoService<CentroCostoE
     }
 
     @Override
+    protected Page<CentroCostoEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository.findByNombreContainingIgnoreCase(
+                    filtro,
+                    pageable
+            );
+        }
+
+        return repository.findByActivoAndNombreContainingIgnoreCase(
+                estado,
+                filtro,
+                pageable
+        );
+    }
+
+    @Override
     protected String nombreCatalogo() { return "Centro de costo"; }
 
     @Override

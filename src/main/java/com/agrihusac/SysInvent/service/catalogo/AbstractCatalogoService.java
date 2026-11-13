@@ -30,6 +30,14 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
 
     protected abstract Page<E> buscarActivos(String filtro, Pageable pageable);
 
+    protected Page<E> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        return buscarActivos(filtro, pageable);
+    }
+
     protected abstract String nombreCatalogo();
 
     protected abstract void establecerActivo(E entity, boolean activo);
@@ -87,9 +95,37 @@ public abstract class AbstractCatalogoService<E extends AuditoriaEntity, Q, R>
 
     @Override
     @Transactional(readOnly = true)
-    public CustomPage<R> listar(String filtro, Pageable pageable) {
-        Page<R> page = buscarActivos(filtro == null ? "" : filtro.trim(), pageable)
-                .map(this::respuesta);
+    public CustomPage<R> listar(
+            String filtro,
+            Pageable pageable
+    ) {
+        String filtroNormalizado =
+                filtro == null ? "" : filtro.trim();
+
+        Page<R> page = buscarActivos(
+                filtroNormalizado,
+                pageable
+        ).map(this::respuesta);
+
+        return new CustomPage<>(page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomPage<R> listar(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        String filtroNormalizado =
+                filtro == null ? "" : filtro.trim();
+
+        Page<R> page = buscarPorEstado(
+                filtroNormalizado,
+                estado,
+                pageable
+        ).map(this::respuesta);
+
         return new CustomPage<>(page);
     }
 

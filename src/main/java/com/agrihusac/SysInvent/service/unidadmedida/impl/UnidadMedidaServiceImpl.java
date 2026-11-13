@@ -54,6 +54,26 @@ public class UnidadMedidaServiceImpl extends AbstractCatalogoService<UnidadMedid
     }
 
     @Override
+    protected Page<UnidadMedidaEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository.findByNombreContainingIgnoreCase(
+                    filtro,
+                    pageable
+            );
+        }
+
+        return repository.findByActivoAndNombreContainingIgnoreCase(
+                estado,
+                filtro,
+                pageable
+        );
+    }
+
+    @Override
     protected String nombreCatalogo() { return "Unidad de medida"; }
 
     @Override

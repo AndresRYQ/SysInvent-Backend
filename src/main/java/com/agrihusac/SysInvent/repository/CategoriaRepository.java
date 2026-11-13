@@ -10,7 +10,14 @@ public interface CategoriaRepository extends JpaRepository<CategoriaEntity, Inte
     List<CategoriaEntity> findAllByActivoTrueOrderByNombreAsc();
 
     Page<CategoriaEntity> findByNombreContainingIgnoreCase(String nombre, Pageable pageable);
+
     Page<CategoriaEntity> findByActivoTrueAndNombreContainingIgnoreCase(String nombre, Pageable pageable);
+
+    Page<CategoriaEntity> findByActivoAndNombreContainingIgnoreCase(
+            Boolean activo,
+            String nombre,
+            Pageable pageable
+    );
 
     boolean existsByNombreIgnoreCase(String nombre);
 

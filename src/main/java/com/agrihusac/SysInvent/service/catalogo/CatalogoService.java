@@ -13,7 +13,16 @@ public interface CatalogoService<Q, R> {
 
     ResponseEntity<MessageResponse> obtener(Integer id);
 
-    CustomPage<R> listar(String filtro, Pageable pageable);
+    CustomPage<R> listar(
+            String filtro,
+            Pageable pageable
+    );
+
+    CustomPage<R> listar(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    );
 
     ResponseEntity<MessageResponse> cambiarEstado(Integer id, boolean activo);
 }

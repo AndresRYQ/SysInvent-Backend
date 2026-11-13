@@ -29,15 +29,25 @@ public class TipoDocumentoController {
     @GetMapping
     @Operation(operationId = "listarTiposDocumento", summary = "Listar tipos de documento")
     public CustomPage<TipoDocumentoResponse> listarTiposDocumento(@RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
+                                                                  @RequestParam(
+                                                                          value = "estado",
+                                                                          required = false
+                                                                  ) Boolean estado,
+                                                                  @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
+                                                                  @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        return service.listar(nombre, pageable);
+        return service.listar(
+                nombre,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping
     @Operation(operationId = "registrarTipoDocumento", summary = "Registrar tipo de documento")
-    public ResponseEntity<MessageResponse> registrarTipoDocumento(@Valid @RequestBody TipoDocumentoRequest request) { return service.crear(request); }
+    public ResponseEntity<MessageResponse> registrarTipoDocumento(@Valid @RequestBody TipoDocumentoRequest request) {
+        return service.crear(request);
+    }
 
     @PutMapping("/{id}")
     @Operation(operationId = "actualizarTipoDocumento", summary = "Actualizar tipo de documento")
@@ -48,5 +58,7 @@ public class TipoDocumentoController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoTipoDocumento", summary = "Cambiar estado del tipo de documento")
     public ResponseEntity<MessageResponse> cambiarEstadoTipoDocumento(@PathVariable @Min(1) Integer id,
-            @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
+                                                                      @Valid @RequestBody EstadoCatalogoRequest request) {
+        return service.cambiarEstado(id, request.activo());
+    }
 }

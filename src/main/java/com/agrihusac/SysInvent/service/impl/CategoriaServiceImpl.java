@@ -72,6 +72,28 @@ public class CategoriaServiceImpl extends
     }
 
     @Override
+    protected Page<CategoriaEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return categoriaRepository
+                    .findByNombreContainingIgnoreCase(
+                            filtro,
+                            pageable
+                    );
+        }
+
+        return categoriaRepository
+                .findByActivoAndNombreContainingIgnoreCase(
+                        estado,
+                        filtro,
+                        pageable
+                );
+    }
+
+    @Override
     protected String nombreCatalogo() {
         return "Categoría";
     }

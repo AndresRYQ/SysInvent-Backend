@@ -66,6 +66,69 @@ public class SecurityConfig {
                                 "ROLE_ADMIN",
                                 "MODULE_/roles"
                         )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/catalogos/**",
+                                "/api/categorias/**"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/tipos-producto/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/tipos-producto"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/tipos-documento/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/tipos-documento"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/destinos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/destinos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/unidades-medida/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/unidades-medida"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/categorias/**",
+                                "/api/categorias/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/categorias"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/centros-costo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/centros-costos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/partes-equipo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/partes-equipo"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

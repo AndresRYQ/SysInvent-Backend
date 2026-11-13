@@ -7,9 +7,20 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ParteEquipoRepository extends JpaRepository<ParteEquipoEntity, Integer> {
+
     List<ParteEquipoEntity> findAllByActivoTrueOrderByNombreAsc();
+
     Page<ParteEquipoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
     Page<ParteEquipoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
+    Page<ParteEquipoEntity> findByActivoAndNombreContainingIgnoreCase(
+            Boolean activo,
+            String filtro,
+            Pageable pageable
+    );
+
     boolean existsByCodigoIgnoreCase(String value);
+
     boolean existsByCodigoIgnoreCaseAndParteEquipoIdNot(String value, Integer id);
 }

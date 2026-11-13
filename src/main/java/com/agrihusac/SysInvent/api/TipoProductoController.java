@@ -29,15 +29,25 @@ public class TipoProductoController {
     @GetMapping
     @Operation(operationId = "listarTiposProducto", summary = "Listar tipos de producto")
     public CustomPage<TipoProductoResponse> listarTiposProducto(@RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
+                                                                @RequestParam(
+                                                                        value = "estado",
+                                                                        required = false
+                                                                ) Boolean estado,
+                                                                @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
+                                                                @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        return service.listar(nombre, pageable);
+        return service.listar(
+                nombre,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping
     @Operation(operationId = "registrarTipoProducto", summary = "Registrar tipo de producto")
-    public ResponseEntity<MessageResponse> registrarTipoProducto(@Valid @RequestBody TipoProductoRequest request) { return service.crear(request); }
+    public ResponseEntity<MessageResponse> registrarTipoProducto(@Valid @RequestBody TipoProductoRequest request) {
+        return service.crear(request);
+    }
 
     @PutMapping("/{id}")
     @Operation(operationId = "actualizarTipoProducto", summary = "Actualizar tipo de producto")
@@ -48,5 +58,7 @@ public class TipoProductoController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoTipoProducto", summary = "Cambiar estado del tipo de producto")
     public ResponseEntity<MessageResponse> cambiarEstadoTipoProducto(@PathVariable @Min(1) Integer id,
-            @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
+                                                                     @Valid @RequestBody EstadoCatalogoRequest request) {
+        return service.cambiarEstado(id, request.activo());
+    }
 }

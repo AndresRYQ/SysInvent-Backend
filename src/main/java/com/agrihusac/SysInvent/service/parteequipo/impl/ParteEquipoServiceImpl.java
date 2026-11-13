@@ -56,6 +56,26 @@ public class ParteEquipoServiceImpl extends AbstractCatalogoService<ParteEquipoE
     }
 
     @Override
+    protected Page<ParteEquipoEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository.findByNombreContainingIgnoreCase(
+                    filtro,
+                    pageable
+            );
+        }
+
+        return repository.findByActivoAndNombreContainingIgnoreCase(
+                estado,
+                filtro,
+                pageable
+        );
+    }
+
+    @Override
     protected String nombreCatalogo() { return "Parte de equipo"; }
 
     @Override
