@@ -21,7 +21,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import com.agrihusac.SysInvent.utils.CustomPage;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 
 @Service
@@ -119,6 +120,31 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
     @Override
     protected Page<ProductoEntity> buscarActivos(String filtro, Pageable pageable) {
         return repository.findByNombreContainingIgnoreCase(filtro == null ? "" : filtro.trim(), pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomPage<ProductoResponse> listar(
+            String filtro,
+            Integer tipoProductoId,
+            Integer categoriaId,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        String filtroNormalizado =
+                filtro == null ? "" : filtro.trim();
+
+        Page<ProductoResponse> page = repository
+                .buscarProductosCatalogo(
+                        filtroNormalizado,
+                        tipoProductoId,
+                        categoriaId,
+                        estado,
+                        pageable
+                )
+                .map(this::respuesta);
+
+        return new CustomPage<>(page);
     }
 
     @Override

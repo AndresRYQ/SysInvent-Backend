@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity, ContactoRequest, ContactoResponse> implements ContactoService {
@@ -65,11 +66,25 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     }
 
     @Override
-    public CustomPage<ContactoResponse> listarPorProveedor(String filtro, Integer proveedorId, Pageable pageable) {
-        String texto = filtro == null ? "" : filtro.trim();
+    @Transactional(readOnly = true)
+    public CustomPage<ContactoResponse> listar(
+            String filtro,
+            Integer proveedorId,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        String filtroNormalizado =
+                filtro == null ? "" : filtro.trim();
+
         Page<ContactoResponse> page = repository
-                .findByProveedorProveedorIdAndActivoTrueAndNombreCompletoContainingIgnoreCase(proveedorId, texto, pageable)
+                .buscarContactos(
+                        filtroNormalizado,
+                        proveedorId,
+                        estado,
+                        pageable
+                )
                 .map(this::respuesta);
+
         return new CustomPage<>(page);
     }
 

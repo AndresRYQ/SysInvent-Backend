@@ -129,6 +129,29 @@ public class SecurityConfig {
                                 "ROLE_ADMIN",
                                 "MODULE_/partes-equipo"
                         )
+                        .requestMatchers(
+                                "/api/v1/catalogos/productos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/productos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/proveedores/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/proveedores"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/contactos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/contactos"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

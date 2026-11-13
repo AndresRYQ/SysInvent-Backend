@@ -135,6 +135,18 @@ class CatalogosSecurityTest {
                 Arguments.of(
                         "/api/categorias",
                         "MODULE_/categorias"
+                ),
+                Arguments.of(
+                        "/api/v1/catalogos/productos",
+                        "MODULE_/productos"
+                ),
+                Arguments.of(
+                        "/api/v1/catalogos/proveedores",
+                        "MODULE_/proveedores"
+                ),
+                Arguments.of(
+                        "/api/v1/catalogos/contactos",
+                        "MODULE_/contactos"
                 )
         );
     }

@@ -28,16 +28,29 @@ public class ProveedorController {
 
     @GetMapping
     @Operation(operationId = "listarProveedores", summary = "Listar proveedores")
-    public CustomPage<ProveedorResponse> listarProveedores(@RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
-        Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        return service.listar(nombre, pageable);
+    public CustomPage<ProveedorResponse> listarProveedores(
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "estado", required = false) Boolean estado,
+            @RequestParam(value = "pagina", defaultValue = "1")
+            @Min(1) Integer pagina,
+            @RequestParam(value = "tamPagina", defaultValue = "10")
+            @Min(1) @Max(100) Integer tamPagina
+    ) {
+        Pageable pageable =
+                PageRequest.of(pagina - 1, tamPagina);
+
+        return service.listar(
+                nombre,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping
     @Operation(operationId = "registrarProveedor", summary = "Registrar proveedor")
-    public ResponseEntity<MessageResponse> registrarProveedor(@Valid @RequestBody ProveedorRequest request) { return service.crear(request); }
+    public ResponseEntity<MessageResponse> registrarProveedor(@Valid @RequestBody ProveedorRequest request) {
+        return service.crear(request);
+    }
 
     @PutMapping("/{id}")
     @Operation(operationId = "actualizarProveedor", summary = "Actualizar proveedor")
@@ -48,5 +61,7 @@ public class ProveedorController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoProveedor", summary = "Cambiar estado del proveedor")
     public ResponseEntity<MessageResponse> cambiarEstadoProveedor(@PathVariable @Min(1) Integer id,
-            @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
+                                                                  @Valid @RequestBody EstadoCatalogoRequest request) {
+        return service.cambiarEstado(id, request.activo());
+    }
 }
