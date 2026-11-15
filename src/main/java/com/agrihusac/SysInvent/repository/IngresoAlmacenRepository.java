@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.Lock;
 
 public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEntity, Integer> {
 
@@ -72,8 +75,28 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
             @Param("fechaDesde") LocalDate fechaDesde,
             @Param("fechaHasta") LocalDate fechaHasta,
             Pageable pageable);
+
     boolean existsByProveedor_ProveedorIdAndTipoDocumento_TipoDocumentoIdAndNumeroDocumentoIgnoreCase(
             Integer proveedorId, Integer tipoDocumentoId, String numeroDocumento);
+
+    boolean existsByProveedor_ProveedorIdAndTipoDocumento_TipoDocumentoIdAndNumeroDocumentoIgnoreCaseAndIngresoAlmacenIdNot(
+            Integer proveedorId,
+            Integer tipoDocumentoId,
+            String numeroDocumento,
+            Integer ingresoAlmacenId
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select distinct ingreso
+          from IngresoAlmacenEntity ingreso
+          left join fetch ingreso.detalles detalle
+          left join fetch detalle.producto
+         where ingreso.ingresoAlmacenId = :id
+        """)
+    Optional<IngresoAlmacenEntity> buscarParaActualizar(
+            @Param("id") Integer id
+    );
 
     @Query("SELECT COALESCE(MAX(i.ingresoAlmacenId), 0) FROM IngresoAlmacenEntity i")
     long obtenerUltimoCorrelativo();

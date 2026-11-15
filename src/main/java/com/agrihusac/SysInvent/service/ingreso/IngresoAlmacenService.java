@@ -12,6 +12,11 @@ public interface IngresoAlmacenService {
 
     ResponseEntity<Object> registrar(IngresoAlmacenRequest request);
 
+    ResponseEntity<Object> actualizar(
+            Integer id,
+            IngresoAlmacenRequest request
+    );
+
     ResponseEntity<Object> obtener(Integer id);
 
     CustomPage<IngresoAlmacenListadoResponse> listar(String busqueda, Integer proveedorId,

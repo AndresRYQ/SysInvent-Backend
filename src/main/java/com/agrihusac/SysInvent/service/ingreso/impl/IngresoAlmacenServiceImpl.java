@@ -33,7 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.TreeSet;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -60,6 +60,20 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
     private static final String MSG_PRODUCTO_NO_ENCONTRADO = "Uno o mas productos no existen o estan inactivos";
     private static final String ENTRADA_INGRESO = "ENTRADA_INGRESO";
     private static final BigDecimal ZERO = BigDecimal.ZERO.setScale(4);
+    private static final String MSG_ACTUALIZADO =
+            "Ingreso de almacen actualizado correctamente";
+
+    private static final String MSG_NO_EDITABLE =
+            "Solo se pueden editar ingresos registrados";
+
+    private static final String MSG_STOCK_INSUFICIENT =
+            "No hay stock suficiente para aplicar la correccion del ingreso";
+
+    private static final String AJUSTE_ENTRADA =
+            "AJUSTE_ENTRADA";
+
+    private static final String ANULACION_ENTRADA =
+            "ANULACION_ENTRADA";
 
     private final IngresoAlmacenRepository ingresoAlmacenRepository;
     private final KardexMovimientoRepository kardexMovimientoRepository;
@@ -162,6 +176,457 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
                 HttpStatus.CREATED,
                 MSG_REGISTRADO,
                 respuesta(ingreso, Map.of())
+        );
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Object> actualizar(
+            Integer id,
+            IngresoAlmacenRequest request
+    ) {
+        IngresoAlmacenEntity ingreso =
+                ingresoAlmacenRepository
+                        .buscarParaActualizar(id)
+                        .orElseThrow(() ->
+                                new CustomNotFoundException(
+                                        MSG_NO_ENCONTRADO
+                                )
+                        );
+
+        if (!IngresoAlmacenEntity.ESTADO_REGISTRADO.equals(
+                ingreso.getEstado()
+        )) {
+            return MessageResponse.setResponse(
+                    false,
+                    HttpStatus.CONFLICT,
+                    MSG_NO_EDITABLE
+            );
+        }
+
+        ProveedorEntity proveedor =
+                proveedorRepository
+                        .findById(request.proveedorId())
+                        .filter(entity ->
+                                Boolean.TRUE.equals(
+                                        entity.getActivo()
+                                )
+                        )
+                        .orElseThrow(() ->
+                                new CustomNotFoundException(
+                                        MSG_PROVEEDOR_NO_ENCONTRADO
+                                )
+                        );
+
+        ContactoEntity contacto =
+                contactoRepository
+                        .findById(request.contactoId())
+                        .filter(entity ->
+                                Boolean.TRUE.equals(
+                                        entity.getActivo()
+                                )
+                        )
+                        .orElseThrow(() ->
+                                new CustomNotFoundException(
+                                        MSG_CONTACTO_NO_ENCONTRADO
+                                )
+                        );
+
+        if (
+                contacto.getProveedor() == null
+                        || !contacto
+                        .getProveedor()
+                        .getProveedorId()
+                        .equals(
+                                proveedor.getProveedorId()
+                        )
+        ) {
+            return MessageResponse.setResponse(
+                    false,
+                    HttpStatus.BAD_REQUEST,
+                    MSG_CONTACTO_NO_PERTENECE
+            );
+        }
+
+        TipoDocumentoEntity tipoDocumento =
+                tipoDocumentoRepository
+                        .findById(
+                                request.tipoDocumentoId()
+                        )
+                        .filter(entity ->
+                                Boolean.TRUE.equals(
+                                        entity.getActivo()
+                                )
+                        )
+                        .orElseThrow(() ->
+                                new CustomNotFoundException(
+                                        MSG_TIPO_DOCUMENTO_NO_ENCONTRADO
+                                )
+                        );
+
+        String numeroDocumento =
+                request.numeroDocumento().trim();
+
+        boolean documentoDuplicado =
+                ingresoAlmacenRepository
+                        .existsByProveedor_ProveedorIdAndTipoDocumento_TipoDocumentoIdAndNumeroDocumentoIgnoreCaseAndIngresoAlmacenIdNot(
+                                proveedor.getProveedorId(),
+                                tipoDocumento
+                                        .getTipoDocumentoId(),
+                                numeroDocumento,
+                                id
+                        );
+
+        if (documentoDuplicado) {
+            return MessageResponse.setResponse(
+                    false,
+                    HttpStatus.CONFLICT,
+                    MSG_DOCUMENTO_DUPLICADO
+            );
+        }
+
+        Map<Integer, BigDecimal>
+                cantidadesAnteriores =
+                new HashMap<>();
+
+        Map<Integer, BigDecimal>
+                preciosAnteriores =
+                new HashMap<>();
+
+        for (
+                DetalleIngresoAlmacenEntity detalle
+                : ingreso.getDetalles()
+        ) {
+            Integer productoId =
+                    detalle
+                            .getProducto()
+                            .getProductoId();
+
+            cantidadesAnteriores.merge(
+                    productoId,
+                    normalizar(detalle.getCantidad()),
+                    BigDecimal::add
+            );
+
+            preciosAnteriores.put(
+                    productoId,
+                    normalizar(
+                            detalle.getPrecioUnitario()
+                    )
+            );
+        }
+
+        Map<Integer, BigDecimal>
+                cantidadesNuevas =
+                new HashMap<>();
+
+        Map<Integer, BigDecimal>
+                preciosNuevos =
+                new HashMap<>();
+
+        for (
+                DetalleIngresoAlmacenRequest detalle
+                : request.detalles()
+        ) {
+            cantidadesNuevas.merge(
+                    detalle.productoId(),
+                    normalizar(detalle.cantidad()),
+                    BigDecimal::add
+            );
+
+            preciosNuevos.put(
+                    detalle.productoId(),
+                    normalizar(
+                            detalle.precioUnitario()
+                    )
+            );
+        }
+
+        TreeSet<Integer> productosIds =
+                new TreeSet<>();
+
+        productosIds.addAll(
+                cantidadesAnteriores.keySet()
+        );
+
+        productosIds.addAll(
+                cantidadesNuevas.keySet()
+        );
+
+        Map<Integer, ProductoEntity> productos =
+                new HashMap<>();
+
+        for (Integer productoId : productosIds) {
+            ProductoEntity producto =
+                    productoRepository
+                            .buscarParaActualizar(
+                                    productoId
+                            )
+                            .orElseThrow(() ->
+                                    new CustomNotFoundException(
+                                            MSG_PRODUCTO_NO_ENCONTRADO
+                                    )
+                            );
+
+            if (
+                    cantidadesNuevas.containsKey(
+                            productoId
+                    )
+                            && !Boolean.TRUE.equals(
+                            producto.getActivo()
+                    )
+            ) {
+                throw new CustomNotFoundException(
+                        MSG_PRODUCTO_NO_ENCONTRADO
+                );
+            }
+
+            productos.put(productoId, producto);
+        }
+
+        Map<Integer, BigDecimal> diferencias =
+                new HashMap<>();
+
+        Map<Integer, BigDecimal> saldosAnteriores =
+                new HashMap<>();
+
+        Map<Integer, BigDecimal> saldosNuevos =
+                new HashMap<>();
+
+        for (Integer productoId : productosIds) {
+            ProductoEntity producto =
+                    productos.get(productoId);
+
+            BigDecimal cantidadAnterior =
+                    cantidadesAnteriores
+                            .getOrDefault(
+                                    productoId,
+                                    ZERO
+                            );
+
+            BigDecimal cantidadNueva =
+                    cantidadesNuevas
+                            .getOrDefault(
+                                    productoId,
+                                    ZERO
+                            );
+
+            BigDecimal diferencia =
+                    normalizar(
+                            cantidadNueva.subtract(
+                                    cantidadAnterior
+                            )
+                    );
+
+            BigDecimal saldoAnterior =
+                    normalizar(
+                            producto.getStockActual()
+                    );
+
+            BigDecimal saldoNuevo =
+                    normalizar(
+                            saldoAnterior.add(
+                                    diferencia
+                            )
+                    );
+
+            if (
+                    saldoNuevo.compareTo(
+                            BigDecimal.ZERO
+                    ) < 0
+            ) {
+                return MessageResponse.setResponse(
+                        false,
+                        HttpStatus.CONFLICT,
+                        MSG_STOCK_INSUFICIENT
+                );
+            }
+
+            diferencias.put(
+                    productoId,
+                    diferencia
+            );
+
+            saldosAnteriores.put(
+                    productoId,
+                    saldoAnterior
+            );
+
+            saldosNuevos.put(
+                    productoId,
+                    saldoNuevo
+            );
+        }
+
+        List<KardexMovimientoEntity> movimientos =
+                new ArrayList<>();
+
+        String usuarioResponsable =
+                usuarioActual();
+
+        LocalDateTime fechaMovimiento =
+                LocalDateTime.now();
+
+        for (Integer productoId : productosIds) {
+            ProductoEntity producto =
+                    productos.get(productoId);
+
+            BigDecimal diferencia =
+                    diferencias.get(productoId);
+
+            BigDecimal precioMovimiento =
+                    preciosNuevos.getOrDefault(
+                            productoId,
+                            preciosAnteriores.getOrDefault(
+                                    productoId,
+                                    normalizar(
+                                            producto
+                                                    .getPrecioUnitario()
+                                    )
+                            )
+                    );
+
+            producto.setStockActual(
+                    saldosNuevos.get(productoId)
+            );
+
+            if (
+                    preciosNuevos.containsKey(
+                            productoId
+                    )
+            ) {
+                producto.setPrecioUnitario(
+                        preciosNuevos.get(productoId)
+                );
+            }
+
+            productoRepository.save(producto);
+
+            if (
+                    diferencia.compareTo(
+                            BigDecimal.ZERO
+                    ) == 0
+            ) {
+                continue;
+            }
+
+            KardexMovimientoEntity movimiento =
+                    new KardexMovimientoEntity();
+
+            movimiento.setIngresoAlmacenId(
+                    ingreso.getIngresoAlmacenId()
+            );
+
+            movimiento.setProductoId(productoId);
+
+            movimiento.setUsuarioResponsable(
+                    usuarioResponsable
+            );
+
+            movimiento.setTipoMovimiento(
+                    diferencia.signum() > 0
+                            ? AJUSTE_ENTRADA
+                            : ANULACION_ENTRADA
+            );
+
+            movimiento.setFechaMovimiento(
+                    fechaMovimiento
+            );
+
+            movimiento.setCantidad(
+                    diferencia.abs()
+            );
+
+            movimiento.setSaldoAnterior(
+                    saldosAnteriores.get(
+                            productoId
+                    )
+            );
+
+            movimiento.setSaldoNuevo(
+                    saldosNuevos.get(
+                            productoId
+                    )
+            );
+
+            movimiento.setPrecioUnitario(
+                    precioMovimiento
+            );
+
+            movimiento.setNumeroDocumento(
+                    ingreso.getNumeroIngreso()
+            );
+
+            movimientos.add(movimiento);
+        }
+
+        ingreso.setFechaIngreso(
+                request.fechaIngreso() == null
+                        ? LocalDate.now()
+                        : request.fechaIngreso()
+        );
+
+        ingreso.setProveedor(proveedor);
+        ingreso.setContacto(contacto);
+        ingreso.setTipoDocumento(tipoDocumento);
+        ingreso.setNumeroDocumento(numeroDocumento);
+
+        ingreso.setObservacion(
+                request.observacion() == null
+                        ? null
+                        : request.observacion().trim()
+        );
+
+        ingreso.getDetalles().clear();
+
+        for (
+                DetalleIngresoAlmacenRequest linea
+                : request.detalles()
+        ) {
+            DetalleIngresoAlmacenEntity detalle =
+                    new DetalleIngresoAlmacenEntity();
+
+            detalle.setProducto(
+                    productos.get(
+                            linea.productoId()
+                    )
+            );
+
+            detalle.setCantidad(
+                    normalizar(linea.cantidad())
+            );
+
+            detalle.setPrecioUnitario(
+                    normalizar(
+                            linea.precioUnitario()
+                    )
+            );
+
+            ingreso.agregarDetalle(detalle);
+        }
+
+        IngresoAlmacenEntity actualizado =
+                ingresoAlmacenRepository
+                        .saveAndFlush(ingreso);
+
+        if (!movimientos.isEmpty()) {
+            kardexMovimientoRepository.saveAll(
+                    movimientos
+            );
+        }
+
+        log.info(
+                "Ingreso de almacen {} actualizado con {} detalle(s) y {} ajuste(s) Kardex",
+                actualizado.getNumeroIngreso(),
+                actualizado.getDetalles().size(),
+                movimientos.size()
+        );
+
+        return MessageResponse.setResponse(
+                true,
+                HttpStatus.OK,
+                MSG_ACTUALIZADO,
+                respuesta(actualizado, Map.of())
         );
     }
 
