@@ -159,6 +159,13 @@ public class SecurityConfig {
                                 "ROLE_ADMIN",
                                 "MODULE_/ingresos-almacen"
                         )
+                        .requestMatchers(
+                                "/api/vales-consumo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/vales-consumo"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())
