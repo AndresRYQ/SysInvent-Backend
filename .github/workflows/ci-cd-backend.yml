@@ -1,0 +1,68 @@
+name: CI-CD Backend SysInvent
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integracion-continua:
+    name: Compilar y ejecutar pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v5
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Dar permiso al Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Ejecutar compilacion y pruebas
+        run: ./mvnw -B clean test
+
+  entrega-continua:
+    name: Generar artefacto backend
+    needs: integracion-continua
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v5
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Dar permiso al Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Generar archivo JAR
+        run: ./mvnw -B package -DskipTests
+
+      - name: Guardar artefacto backend
+        uses: actions/upload-artifact@v4
+        with:
+          name: sysinvent-backend
+          path: target/*.jar
+          if-no-files-found: error
+          retention-days: 7
