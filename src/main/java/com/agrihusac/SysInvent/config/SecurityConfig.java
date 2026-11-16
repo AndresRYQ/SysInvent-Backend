@@ -189,6 +189,49 @@ public class SecurityConfig {
                                 "/api/bitacora/**"
                         )
                         .authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/dashboard",
+                                "/api/dashboard/**"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/reportes/ingresos",
+                                "/api/reportes/ingresos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/ingresos"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/vales",
+                                "/api/reportes/vales/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/vales"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/productos-mas-pedidos",
+                                "/api/reportes/productos-mas-pedidos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/productos-mas-pedidos"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/kardex",
+                                "/api/reportes/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/kardex",
+                                "MODULE_/control-almacen"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

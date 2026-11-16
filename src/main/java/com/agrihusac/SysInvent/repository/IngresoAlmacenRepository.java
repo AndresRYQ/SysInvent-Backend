@@ -18,7 +18,7 @@ public interface IngresoAlmacenRepository extends JpaRepository<IngresoAlmacenEn
     @Query(value = """
             SELECT i.ingreso_almacen_id AS ingresoAlmacenId,
                    i.numero_ingreso AS numeroIngreso,
-                   CONVERT(VARCHAR(10), i.fecha_ingreso, 103) AS fechaIngreso,
+                   i.fecha_ingreso AS fechaIngreso,
                    p.razon_social AS proveedor,
                    CONCAT(td.nombre, ' - ', i.numero_documento) AS documento,
                    tp.nombre AS tipoProducto,

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class DashboardResponse {
     public static class Cards {
         private Long productosActivos;
         private Long stockCritico;
+        private Long productosSinStock;
         private Long ingresosMes;
         private Long valesMes;
         private Long movimientosHoy;
@@ -44,7 +45,7 @@ public class DashboardResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ActividadReciente {
-        private String fecha;
+        private LocalDateTime fecha;
         private String tipo;
         private String documento;
         private String producto;
