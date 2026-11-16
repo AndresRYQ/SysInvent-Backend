@@ -166,6 +166,14 @@ public class SecurityConfig {
                                 "ROLE_ADMIN",
                                 "MODULE_/vales-consumo"
                         )
+                        .requestMatchers(
+                                "/api/almacen/**",
+                                "/api/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/control-almacen"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

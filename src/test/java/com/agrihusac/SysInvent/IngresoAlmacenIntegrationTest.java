@@ -581,7 +581,7 @@ class IngresoAlmacenIntegrationTest {
                 kardexMovimientoRepository
                         .buscarMovimientos(
                                 producto.getProductoId(),
-                                "ANULACION_ENTRADA",
+                                "AJUSTE_SALIDA",
                                 null,
                                 null
                         )
@@ -717,7 +717,7 @@ class IngresoAlmacenIntegrationTest {
                 kardexMovimientoRepository
                         .buscarMovimientos(
                                 producto.getProductoId(),
-                                "ANULACION_ENTRADA",
+                                "AJUSTE_SALIDA",
                                 null,
                                 null
                         )

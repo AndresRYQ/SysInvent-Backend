@@ -72,8 +72,8 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
     private static final String AJUSTE_ENTRADA =
             "AJUSTE_ENTRADA";
 
-    private static final String ANULACION_ENTRADA =
-            "ANULACION_ENTRADA";
+    private static final String AJUSTE_SALIDA =
+            "AJUSTE_SALIDA";
 
     private final IngresoAlmacenRepository ingresoAlmacenRepository;
     private final KardexMovimientoRepository kardexMovimientoRepository;
@@ -526,7 +526,7 @@ public class IngresoAlmacenServiceImpl implements IngresoAlmacenService {
             movimiento.setTipoMovimiento(
                     diferencia.signum() > 0
                             ? AJUSTE_ENTRADA
-                            : ANULACION_ENTRADA
+                            : AJUSTE_SALIDA
             );
 
             movimiento.setFechaMovimiento(
