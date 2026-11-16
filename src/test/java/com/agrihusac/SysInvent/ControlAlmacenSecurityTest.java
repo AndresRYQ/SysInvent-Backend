@@ -16,7 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,6 +107,48 @@ class ControlAlmacenSecurityTest {
                                         ))
                 )
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void permiteLecturasConModuloReporteKardex() throws Exception {
+        var permisoReporte = new SimpleGrantedAuthority(
+                "MODULE_/reportes/kardex"
+        );
+
+        mockMvc.perform(
+                        get("/api/almacen/existencias")
+                                .with(user("reporte-kardex")
+                                        .authorities(permisoReporte))
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        get("/api/almacen/existencias/1/detalle")
+                                .with(user("reporte-kardex")
+                                        .authorities(permisoReporte))
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        get("/api/kardex/stock")
+                                .with(user("reporte-kardex")
+                                        .authorities(permisoReporte))
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void rechazaEscrituraConModuloSoloReporteKardex() throws Exception {
+        mockMvc.perform(
+                        post("/api/almacen/existencias")
+                                .with(user("reporte-kardex")
+                                        .authorities(
+                                                new SimpleGrantedAuthority(
+                                                        "MODULE_/reportes/kardex"
+                                                )
+                                        ))
+                )
+                .andExpect(status().isForbidden());
     }
 
     @Test

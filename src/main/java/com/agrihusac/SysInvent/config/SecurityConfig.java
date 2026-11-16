@@ -167,6 +167,17 @@ public class SecurityConfig {
                                 "MODULE_/vales-consumo"
                         )
                         .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/almacen/**",
+                                "/api/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/control-almacen",
+                                "MODULE_/reportes/kardex"
+                        )
+
+                        .requestMatchers(
                                 "/api/almacen/**",
                                 "/api/kardex/**"
                         )
