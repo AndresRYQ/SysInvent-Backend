@@ -174,6 +174,21 @@ public class SecurityConfig {
                                 "ROLE_ADMIN",
                                 "MODULE_/control-almacen"
                         )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/bitacora",
+                                "/api/bitacora/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/bitacora"
+                        )
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/bitacora",
+                                "/api/bitacora/**"
+                        )
+                        .authenticated()
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

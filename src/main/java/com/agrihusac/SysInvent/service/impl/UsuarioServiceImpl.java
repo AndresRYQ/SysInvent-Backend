@@ -227,6 +227,13 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getUsuario(),
                 contrasenaTemporal));
 
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("CREAR")
+                .detalle("Se registró el usuario \"" + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
     }
 
@@ -271,6 +278,14 @@ public class UsuarioServiceImpl implements UsuarioService {
                         .build());
         }
 
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("EDITAR")
+                .detalle("Se actualizaron los datos y el rol del usuario \""
+                        + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
     }
 
@@ -286,6 +301,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
 
         String mensaje = activo ? MSG_USUARIO_ACTIVADO : MSG_USUARIO_DESACTIVADO;
+
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("EDITAR")
+                .detalle((activo ? "Se activó" : "Se desactivó")
+                        + " el usuario \"" + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
     }
 

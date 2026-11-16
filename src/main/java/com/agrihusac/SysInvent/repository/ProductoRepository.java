@@ -49,7 +49,7 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
                                THEN -k.cantidad
                            ELSE 0
                        END
-                   ), 0) AS entradas
+                   ), 0) AS entradas,
                    COALESCE(SUM(
                        CASE
                            WHEN k.ingreso_almacen_id IS NULL
