@@ -17,6 +17,10 @@ public interface ContactoRepository extends JpaRepository<ContactoEntity, Intege
 
     List<ContactoEntity> findByProveedorProveedorIdAndActivoTrueOrderByNombreCompletoAsc(Integer proveedorId);
 
+    boolean existsByProveedorProveedorIdAndNombreCompletoIgnoreCase(Integer proveedorId, String nombreCompleto);
+
+    boolean existsByProveedorProveedorIdAndNombreCompletoIgnoreCaseAndContactoIdNot(Integer proveedorId, String nombreCompleto, Integer contactoId);
+
     @Query("""
         select c
         from ContactoEntity c
