@@ -7,9 +7,18 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TipoProductoRepository extends JpaRepository<TipoProductoEntity, Integer> {
+
     List<TipoProductoEntity> findAllByActivoTrueOrderByNombreAsc();
+
     Page<TipoProductoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
-    Page<TipoProductoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
+    Page<TipoProductoEntity> findByActivoAndNombreContainingIgnoreCase(
+            Boolean activo,
+            String filtro,
+            Pageable pageable
+    );
+
     boolean existsByNombreIgnoreCase(String value);
+
     boolean existsByNombreIgnoreCaseAndTipoProductoIdNot(String value, Integer id);
 }

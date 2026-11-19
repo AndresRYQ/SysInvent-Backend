@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Getter
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class ReporteValeListadoResponse {
     private Integer valeConsumoId;
     private String numeroVale;
-    private String fechaVale;
+    private LocalDate fechaVale;
     private String centroCosto;
     private String solicitante;
     private String codigoProducto;

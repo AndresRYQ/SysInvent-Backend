@@ -28,15 +28,25 @@ public class ContactoController {
 
     @GetMapping
     @Operation(operationId = "listarContactos", summary = "Listar contactos")
-    public CustomPage<ContactoResponse> listarContactos(@RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "proveedorId", required = false) Integer proveedorId,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
-        Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        if (proveedorId != null) {
-            return service.listarPorProveedor(nombre, proveedorId, pageable);
-        }
-        return service.listar(nombre, pageable);
+    public CustomPage<ContactoResponse> listarContactos(
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "proveedorId", required = false)
+            @Min(1) Integer proveedorId,
+            @RequestParam(value = "estado", required = false) Boolean estado,
+            @RequestParam(value = "pagina", defaultValue = "1")
+            @Min(1) Integer pagina,
+            @RequestParam(value = "tamPagina", defaultValue = "10")
+            @Min(1) @Max(100) Integer tamPagina
+    ) {
+        Pageable pageable =
+                PageRequest.of(pagina - 1, tamPagina);
+
+        return service.listar(
+                nombre,
+                proveedorId,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping

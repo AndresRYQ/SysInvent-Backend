@@ -1,35 +1,217 @@
 package com.agrihusac.SysInvent;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.agrihusac.SysInvent.api.ValeConsumoController;
-import com.agrihusac.SysInvent.service.valeconsumo.ValeConsumoService;
+import com.agrihusac.SysInvent.model.entity.CentroCostoEntity;
+import com.agrihusac.SysInvent.model.entity.DestinoEntity;
+import com.agrihusac.SysInvent.model.entity.ProductoEntity;
+import com.agrihusac.SysInvent.model.entity.UnidadMedidaEntity;
+import com.agrihusac.SysInvent.repository.CentroCostoRepository;
+import com.agrihusac.SysInvent.repository.DestinoRepository;
+import com.agrihusac.SysInvent.repository.ProductoRepository;
+import com.agrihusac.SysInvent.repository.UnidadMedidaRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
+import java.math.BigDecimal;
+import java.util.UUID;
+import com.agrihusac.SysInvent.model.entity.CategoriaEntity;
+import com.agrihusac.SysInvent.model.entity.ProveedorEntity;
+import com.agrihusac.SysInvent.model.entity.TipoProductoEntity;
+import com.agrihusac.SysInvent.repository.CategoriaRepository;
+import com.agrihusac.SysInvent.repository.ProveedorRepository;
+import com.agrihusac.SysInvent.repository.TipoProductoRepository;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+@WithMockUser(
+        username = "almacenero",
+        authorities = "MODULE_/vales-consumo"
+)
 class ValeConsumoIntegrationTest {
 
-    @InjectMocks
-    private ValeConsumoController valeConsumoController;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @Mock
-    private ValeConsumoService valeConsumoService;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private CentroCostoRepository centroCostoRepository;
+
+    @Autowired
+    private DestinoRepository destinoRepository;
+
+    @Autowired
+    private UnidadMedidaRepository unidadMedidaRepository;
+
+    @Autowired
+    private ProductoRepository productoRepository;
+
+    @Autowired
+    private TipoProductoRepository tipoProductoRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private ProveedorRepository proveedorRepository;
+
+    private Integer centroCostoId;
+    private Integer destinoId;
+    private Integer productoId;
+
+    @BeforeEach
+    void prepararCatalogos() {
+        String sufijo = UUID.randomUUID().toString();
+
+        CentroCostoEntity centroCosto = new CentroCostoEntity();
+        centroCosto.setNombre("Centro " + sufijo);
+        centroCosto.setActivo(true);
+        centroCostoId = centroCostoRepository.save(centroCosto).getCentroCostoId();
+
+        DestinoEntity destino = new DestinoEntity();
+        destino.setNombre("Destino " + sufijo);
+        destino.setActivo(true);
+        destinoId = destinoRepository.save(destino).getDestinoId();
+
+        UnidadMedidaEntity unidad = new UnidadMedidaEntity();
+        unidad.setNombre("Unidad " + sufijo);
+        unidad.setActivo(true);
+        Integer unidadId = unidadMedidaRepository.save(unidad).getUnidadMedidaId();
+
+        TipoProductoEntity tipoProducto = new TipoProductoEntity();
+        tipoProducto.setNombre("Tipo " + sufijo);
+        tipoProducto.setActivo(true);
+        Integer tipoProductoId =
+                tipoProductoRepository.save(tipoProducto).getTipoProductoId();
+
+        CategoriaEntity categoria = new CategoriaEntity();
+        categoria.setNombre("Categoría " + sufijo);
+        categoria.setActivo(true);
+        Integer categoriaId =
+                categoriaRepository.save(categoria).getCategoriaId();
+
+        ProveedorEntity proveedor = new ProveedorEntity();
+        proveedor.setRuc(
+                String.format(
+                        "20%09d",
+                        Math.floorMod(sufijo.hashCode(), 1_000_000_000)
+                )
+        );
+        proveedor.setRazonSocial("Proveedor " + sufijo);
+        proveedor.setActivo(true);
+        Integer proveedorId =
+                proveedorRepository.save(proveedor).getProveedorId();
+
+        ProductoEntity producto = new ProductoEntity();
+        producto.setActivo(true);
+        producto.setCodigo(sufijo);
+        producto.setNombre("Producto " + sufijo);
+        producto.setTipoProductoId(tipoProductoId);
+        producto.setCategoriaId(categoriaId);
+        producto.setUnidadMedidaId(unidadId);
+        producto.setProveedorId(proveedorId);
+        producto.setStockActual(new BigDecimal("5.0000"));
+        producto.setStockMinimo(BigDecimal.ZERO);
+        producto.setPrecioUnitario(new BigDecimal("10.0000"));
+        productoId = productoRepository.save(producto).getProductoId();
+    }
 
     @Test
-    void obtieneValeMedianteServicioMockeado() {
-        when(valeConsumoService.obtener(1)).thenReturn(null);
+    void createUpdateAndCancelAdjustStockAndRegisterKardex() throws Exception {
+        String createResponse = mockMvc.perform(post("/api/vales-consumo")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("2.0000")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.estado").value("REGISTRADO"))
+                .andExpect(jsonPath("$.data.movimientosKardex[0].tipoMovimiento").value("SALIDA_VALE"))
+                .andReturn().getResponse().getContentAsString();
 
-        ResponseEntity<Object> resultado = valeConsumoController.obtener(1);
+        int valeId = objectMapper.readTree(createResponse).path("data").path("id").asInt();
+        assertStock("3.0000");
 
-        assertEquals(HttpStatus.OK, resultado.getStatusCode());
-        verify(valeConsumoService).obtener(1);
+        mockMvc.perform(get("/api/vales-consumo/{id}", valeId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.numeroVale").isNotEmpty())
+                .andExpect(jsonPath("$.data.detalles[0].cantidad").value(2));
+
+        mockMvc.perform(put("/api/vales-consumo/{id}", valeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("4.0000")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.movimientosKardex[1].tipoMovimiento").value("AJUSTE_SALIDA"));
+        assertStock("1.0000");
+
+        mockMvc.perform(put("/api/vales-consumo/{id}", valeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("1.5000")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.movimientosKardex[2].tipoMovimiento").value("AJUSTE_ENTRADA"));
+        assertStock("3.5000");
+
+        mockMvc.perform(patch("/api/vales-consumo/{id}/anular", valeId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.estado").value("ANULADO"))
+                .andExpect(jsonPath("$.data.movimientosKardex[3].tipoMovimiento").value("ANULACION_ENTRADA"));
+        assertStock("5.0000");
+
+        mockMvc.perform(patch("/api/vales-consumo/{id}/anular", valeId))
+                .andExpect(status().isConflict());
+        mockMvc.perform(put("/api/vales-consumo/{id}", valeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("1.0000")))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void insufficientStockReturnsConflictAndDoesNotCreateVoucher() throws Exception {
+        mockMvc.perform(post("/api/vales-consumo")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("6.0000")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.data.code").value("STOCK_INSUFFICIENT"))
+                .andExpect(jsonPath("$.data.productos[0].cantidadSolicitada").value(6));
+        assertStock("5.0000");
+
+        mockMvc.perform(get("/api/vales-consumo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.datos").isArray());
+    }
+
+    private String payload(String cantidad) {
+        return """
+                {
+                  "fechaVale":"2026-10-13",
+                  "centroCostoId":%d,
+                  "solicitante":"Solicitante de prueba",
+                  "motivo":"Prueba de consumo",
+                  "detalles":[{
+                    "productoId":%d,
+                    "distribuciones":[{
+                      "destinoId":%d,
+                      "parteEquipoId":null,
+                      "cantidad":%s
+                    }]
+                  }]
+                }
+                """.formatted(centroCostoId, productoId, destinoId, cantidad);
+    }
+
+    private void assertStock(String esperado) {
+        BigDecimal actual = productoRepository.findById(productoId).orElseThrow().getStockActual();
+        org.junit.jupiter.api.Assertions.assertEquals(0, actual.compareTo(new BigDecimal(esperado)));
     }
 }

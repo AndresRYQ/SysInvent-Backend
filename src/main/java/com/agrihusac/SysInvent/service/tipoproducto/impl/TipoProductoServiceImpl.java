@@ -54,6 +54,26 @@ public class TipoProductoServiceImpl extends AbstractCatalogoService<TipoProduct
     }
 
     @Override
+    protected Page<TipoProductoEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository.findByNombreContainingIgnoreCase(
+                    filtro,
+                    pageable
+            );
+        }
+
+        return repository.findByActivoAndNombreContainingIgnoreCase(
+                estado,
+                filtro,
+                pageable
+        );
+    }
+
+    @Override
     protected String nombreCatalogo() { return "Tipo de producto"; }
 
     @Override

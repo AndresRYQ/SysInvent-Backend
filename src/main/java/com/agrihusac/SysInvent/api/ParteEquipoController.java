@@ -29,15 +29,25 @@ public class ParteEquipoController {
     @GetMapping
     @Operation(operationId = "listarPartesEquipo", summary = "Listar partes de equipo")
     public CustomPage<ParteEquipoResponse> listarPartesEquipo(@RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
+                                                              @RequestParam(
+                                                                      value = "estado",
+                                                                      required = false
+                                                              ) Boolean estado,
+                                                              @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
+                                                              @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        return service.listar(nombre, pageable);
+        return service.listar(
+                nombre,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping
     @Operation(operationId = "registrarParteEquipo", summary = "Registrar parte de equipo")
-    public ResponseEntity<MessageResponse> registrarParteEquipo(@Valid @RequestBody ParteEquipoRequest request) { return service.crear(request); }
+    public ResponseEntity<MessageResponse> registrarParteEquipo(@Valid @RequestBody ParteEquipoRequest request) {
+        return service.crear(request);
+    }
 
     @PutMapping("/{id}")
     @Operation(operationId = "actualizarParteEquipo", summary = "Actualizar parte de equipo")
@@ -48,5 +58,7 @@ public class ParteEquipoController {
     @PutMapping("/{id}/estado")
     @Operation(operationId = "cambiarEstadoParteEquipo", summary = "Cambiar estado de la parte de equipo")
     public ResponseEntity<MessageResponse> cambiarEstadoParteEquipo(@PathVariable @Min(1) Integer id,
-            @Valid @RequestBody EstadoCatalogoRequest request) { return service.cambiarEstado(id, request.activo()); }
+                                                                    @Valid @RequestBody EstadoCatalogoRequest request) {
+        return service.cambiarEstado(id, request.activo());
+    }
 }

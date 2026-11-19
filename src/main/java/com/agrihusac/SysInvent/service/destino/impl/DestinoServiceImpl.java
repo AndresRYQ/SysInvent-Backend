@@ -54,6 +54,26 @@ public class DestinoServiceImpl extends AbstractCatalogoService<DestinoEntity, D
     }
 
     @Override
+    protected Page<DestinoEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository.findByNombreContainingIgnoreCase(
+                    filtro,
+                    pageable
+            );
+        }
+
+        return repository.findByActivoAndNombreContainingIgnoreCase(
+                estado,
+                filtro,
+                pageable
+        );
+    }
+
+    @Override
     protected String nombreCatalogo() { return "Destino"; }
 
     @Override

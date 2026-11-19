@@ -75,7 +75,7 @@ public interface ValeConsumoRepository extends JpaRepository<ValeConsumoEntity, 
     @Query(value = """
             SELECT v.vale_consumo_id AS valeConsumoId,
                    v.numero_vale AS numeroVale,
-                   CONVERT(VARCHAR(10), v.fecha_vale, 103) AS fechaVale,
+                   v.fecha_vale AS fechaVale,
                    cc.nombre AS centroCosto,
                    v.solicitante AS solicitante,
                    p.codigo AS codigoProducto,

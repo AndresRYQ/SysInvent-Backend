@@ -87,7 +87,8 @@ public class ControlAlmacenServiceImpl implements ControlAlmacenService {
 
     private boolean esEntrada(KardexMovimientoEntity movimiento) {
         return "ENTRADA_INGRESO".equals(movimiento.getTipoMovimiento())
-                || "AJUSTE_ENTRADA".equals(movimiento.getTipoMovimiento());
+                || "AJUSTE_ENTRADA".equals(movimiento.getTipoMovimiento())
+                || "ANULACION_ENTRADA".equals(movimiento.getTipoMovimiento());
     }
 
     private String nombreDestino(Integer id) {

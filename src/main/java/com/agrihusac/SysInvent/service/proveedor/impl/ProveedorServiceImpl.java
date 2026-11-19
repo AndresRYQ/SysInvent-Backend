@@ -26,22 +26,22 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
     @Override
     protected ProveedorEntity crearEntidad(ProveedorRequest request) {
         ProveedorEntity entity = new ProveedorEntity();
-        entity.setRuc(request.ruc());
-        entity.setRazonSocial(request.razonSocial());
-        entity.setCorreo(request.correo());
-        entity.setTelefono(request.telefono());
-        entity.setDireccion(request.direccion());
+        entity.setRuc(request.ruc().trim());
+        entity.setRazonSocial(request.razonSocial().trim());
+        entity.setCorreo(limpiarOpcional(request.correo()));
+        entity.setTelefono(limpiarOpcional(request.telefono()));
+        entity.setDireccion(limpiarOpcional(request.direccion()));
         entity.setActivo(true);
         return entity;
     }
 
     @Override
     protected void actualizarEntidad(ProveedorEntity entity, ProveedorRequest request) {
-        entity.setRuc(request.ruc());
-        entity.setRazonSocial(request.razonSocial());
-        entity.setCorreo(request.correo());
-        entity.setTelefono(request.telefono());
-        entity.setDireccion(request.direccion());
+        entity.setRuc(request.ruc().trim());
+        entity.setRazonSocial(request.razonSocial().trim());
+        entity.setCorreo(limpiarOpcional(request.correo()));
+        entity.setTelefono(limpiarOpcional(request.telefono()));
+        entity.setDireccion(limpiarOpcional(request.direccion()));
     }
 
     @Override
@@ -51,7 +51,8 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
 
     @Override
     protected boolean duplicado(ProveedorRequest request, Integer idExcluido) {
-        return idExcluido == null ? repository.existsByRucIgnoreCase(request.ruc()) : repository.existsByRucIgnoreCaseAndProveedorIdNot(request.ruc(), idExcluido);
+        String ruc = request.ruc().trim();
+        return idExcluido == null ? repository.existsByRucIgnoreCase(ruc) : repository.existsByRucIgnoreCaseAndProveedorIdNot(ruc, idExcluido);
     }
 
     @Override
@@ -60,16 +61,52 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
     }
 
     @Override
-    protected String nombreCatalogo() { return "Proveedor"; }
+    protected Page<ProveedorEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository
+                    .findByRazonSocialContainingIgnoreCase(
+                            filtro,
+                            pageable
+                    );
+        }
+
+        return repository
+                .findByActivoAndRazonSocialContainingIgnoreCase(
+                        estado,
+                        filtro,
+                        pageable
+                );
+    }
 
     @Override
-    protected void establecerActivo(ProveedorEntity entity, boolean activo) { entity.setActivo(activo); }
+    protected String nombreCatalogo() {
+        return "Proveedor";
+    }
 
     @Override
-    protected boolean estaActivo(ProveedorEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
+    protected void establecerActivo(ProveedorEntity entity, boolean activo) {
+        entity.setActivo(activo);
+    }
+
+    @Override
+    protected boolean estaActivo(ProveedorEntity entity) {
+        return Boolean.TRUE.equals(entity.getActivo());
+    }
 
     @Override
     protected ResponseEntity<MessageResponse> validar(ProveedorRequest request) {
         return null;
+    }
+
+    private String limpiarOpcional(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        String limpio = valor.trim();
+        return limpio.isEmpty() ? null : limpio;
     }
 }

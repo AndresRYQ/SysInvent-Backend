@@ -7,6 +7,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
@@ -14,15 +15,26 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(Cors cors) {
         CorsConfiguration configuration = new CorsConfiguration();
+
         configuration.setAllowCredentials(cors.isAllowCredentials());
-        configuration.setAllowedOrigins(Arrays.asList(cors.getAllowOrigins().split(",")));
-        configuration.setAllowedMethods(Arrays.asList(cors.getAllowMethods().split(",")));
-        configuration.setAllowedHeaders(Arrays.asList(cors.getAllowHeaders().split(",")));
-        configuration.setExposedHeaders(Arrays.asList(cors.getExposedHeaders().split(",")));
+        configuration.setAllowedOrigins(splitAndTrim(cors.getAllowOrigins()));
+        configuration.setAllowedMethods(splitAndTrim(cors.getAllowMethods()));
+        configuration.setAllowedHeaders(splitAndTrim(cors.getAllowHeaders()));
+        configuration.setExposedHeaders(splitAndTrim(cors.getExposedHeaders()));
         configuration.setMaxAge(cors.getMaxAge());
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration(cors.getMapping(), configuration);
         return source;
+    }
+
+    private List<String> splitAndTrim(String value) {
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(item -> !item.isEmpty())
+                .distinct()
+                .toList();
     }
 }

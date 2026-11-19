@@ -12,6 +12,31 @@ API backend para SysInvent basada en Java 17, Spring Boot, Spring Data JPA y SQL
 
 La aplicación importa `.env` localmente. No subas `.env` al control de versiones. En producción, inyecta las mismas variables desde el gestor de secretos del entorno.
 
+## Perfiles de ejecución
+
+- `local`: perfil predeterminado para desarrollo. Importa las variables desde `.env`.
+- `prod`: perfil de producción. Recibe las variables directamente del entorno.
+- `test`: perfil reservado para la ejecución automatizada de pruebas.
+
+El contenedor Docker utiliza `prod` de manera predeterminada. Este valor puede reemplazarse mediante la variable `SPRING_PROFILES_ACTIVE`.
+
+## Ejecución con Docker
+
+Construir la imagen:
+
+```powershell
+docker build -t sysinvent-backend .
+```
+
+Ejecutar el contenedor usando las variables locales:
+
+```powershell
+docker run --rm --env-file .env -p 8080:8080 sysinvent-backend
+```
+
+La aplicación queda disponible en `http://localhost:8080`.
+
+
 ## Validación
 
 ```powershell

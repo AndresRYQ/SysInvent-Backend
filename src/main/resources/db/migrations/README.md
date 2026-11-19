@@ -17,14 +17,17 @@ Los scripts deben ejecutarse respetando el número de versión:
 | V002 | `V002__catalogos_productos.sql` | Crea catálogos, proveedores, contactos y productos. |
 | V003 | `V003__operaciones_almacen.sql` | Crea ingresos, vales, distribuciones, kardex y bitácora. |
 | V004 | `V004__modulos_datos_iniciales.sql` | Crea módulos, permisos y datos iniciales. |
-
+| V005 | `V005__ajustar_longitudes_proveedor.sql` | Ajusta longitudes de campos de proveedores. |
+| V006 | `V006__ajustar_longitudes_contactos.sql` | Ajusta longitudes de campos de contactos. |
+| V007 | `V007__ajustar_longitud_dni.sql` | Ajusta la longitud del DNI de usuarios. |
+| V008 | `V008__agregar_modulo_reporte_kardex.sql` | Registra el módulo Reporte Kardex y sus permisos. |
 ## Procedimiento de ejecución
 
 1. Realizar una copia de seguridad de la base de datos.
 2. Abrir SQL Server Management Studio.
 3. Conectarse al servidor SQL Server.
-4. Ejecutar primero `V001`.
-5. Continuar con `V002`, `V003` y `V004`.
+4. Ejecutar las migraciones desde `V001` hasta `V008` en orden ascendente.
+5. No omitir versiones, aunque una migración parezca no afectar al ambiente actual.
 6. Si un script presenta un error, detener la ejecución y no continuar con la siguiente versión.
 7. Registrar la fecha, el responsable y el resultado de cada ejecución.
 
@@ -32,7 +35,7 @@ Los scripts deben ejecutarse respetando el número de versión:
 
 - No modificar un script que ya fue ejecutado en un ambiente.
 - Cada cambio nuevo debe crearse en un archivo con una versión superior.
-- El siguiente cambio deberá llamarse `V005__descripcion_del_cambio.sql`.
+- El siguiente cambio deberá llamarse `V009__descripcion_del_cambio.sql`.
 - Los scripts deben incluir validaciones para evitar registros u objetos duplicados.
 - No se deben incluir contraseñas en texto plano.
 - Antes de ejecutar una migración en producción debe probarse en desarrollo.
