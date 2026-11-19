@@ -1,9 +1,11 @@
 package com.agrihusac.SysInvent.model.projection;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public interface DashboardActividadProjection {
-    String getFecha();
+
+    LocalDateTime getFecha();
     String getTipo();
     String getDocumento();
     String getProducto();

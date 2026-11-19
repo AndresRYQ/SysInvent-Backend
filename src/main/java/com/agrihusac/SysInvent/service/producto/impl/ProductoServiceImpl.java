@@ -21,8 +21,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
+import com.agrihusac.SysInvent.utils.CustomPage;
+import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
+import java.util.Locale;
 
 @Service
 public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity, ProductoRequest, ProductoResponse> implements ProductoService {
@@ -50,7 +52,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
     @Override
     protected ProductoEntity crearEntidad(ProductoRequest request) {
         ProductoEntity entity = new ProductoEntity();
-        entity.setCodigo(request.codigo().trim());
+        entity.setCodigo(normalizarCodigo(request.codigo()));
         entity.setNombre(request.nombre().trim());
         entity.setDescripcion(request.descripcion() == null ? null : request.descripcion().trim());
         entity.setTipoProductoId(request.tipoProductoId());
@@ -66,7 +68,7 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
 
     @Override
     protected void actualizarEntidad(ProductoEntity entity, ProductoRequest request) {
-        entity.setCodigo(request.codigo().trim());
+        entity.setCodigo(normalizarCodigo(request.codigo()));
         entity.setNombre(request.nombre().trim());
         entity.setDescripcion(request.descripcion() == null ? null : request.descripcion().trim());
         entity.setTipoProductoId(request.tipoProductoId());
@@ -110,15 +112,41 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
 
     @Override
     protected boolean duplicado(ProductoRequest request, Integer idExcluido) {
+        String codigo = normalizarCodigo(request.codigo());
         if (idExcluido == null) {
-            return repository.existsByCodigoIgnoreCase(request.codigo());
+            return repository.existsByCodigoIgnoreCase(codigo);
         }
-        return repository.existsByCodigoIgnoreCaseAndProductoIdNot(request.codigo(), idExcluido);
+        return repository.existsByCodigoIgnoreCaseAndProductoIdNot(codigo, idExcluido);
     }
 
     @Override
     protected Page<ProductoEntity> buscarActivos(String filtro, Pageable pageable) {
         return repository.findByNombreContainingIgnoreCase(filtro == null ? "" : filtro.trim(), pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomPage<ProductoResponse> listar(
+            String filtro,
+            Integer tipoProductoId,
+            Integer categoriaId,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        String filtroNormalizado =
+                filtro == null ? "" : filtro.trim();
+
+        Page<ProductoResponse> page = repository
+                .buscarProductosCatalogo(
+                        filtroNormalizado,
+                        tipoProductoId,
+                        categoriaId,
+                        estado,
+                        pageable
+                )
+                .map(this::respuesta);
+
+        return new CustomPage<>(page);
     }
 
     @Override
@@ -155,6 +183,10 @@ public class ProductoServiceImpl extends AbstractCatalogoService<ProductoEntity,
             return MessageResponse.setResponse(false, HttpStatus.NOT_FOUND, "No se encontró un proveedor activo con ese id");
         }
         return null;
+    }
+
+    private String normalizarCodigo(String codigo) {
+        return codigo == null ? null : codigo.trim().toUpperCase(Locale.ROOT);
     }
 
     private BigDecimal normalizar(BigDecimal valor) {

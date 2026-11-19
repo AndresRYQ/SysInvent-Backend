@@ -1,11 +1,12 @@
 package com.agrihusac.SysInvent.model.projection;
 
+import java.time.LocalDate;
 import java.math.BigDecimal;
 
 public interface ReporteIngresoListadoProjection {
     Integer getIngresoAlmacenId();
     String getNumeroIngreso();
-    String getFechaIngreso();
+    LocalDate getFechaIngreso();
     String getProveedor();
     String getDocumento();
     String getTipoProducto();

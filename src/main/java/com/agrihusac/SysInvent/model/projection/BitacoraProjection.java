@@ -1,11 +1,15 @@
 package com.agrihusac.SysInvent.model.projection;
 
+import java.time.LocalDateTime;
+
 public interface BitacoraProjection {
 
-    String getFechaHora();
+    Long getBitacoraId();
+    LocalDateTime getFechaHora();
     String getNombreUsuario();
     String getNombreRol();
     String getModulo();
     String getAccion();
     String getDetalle();
+    String getRegistroId();
 }

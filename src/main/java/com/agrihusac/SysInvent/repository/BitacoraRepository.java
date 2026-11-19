@@ -12,35 +12,37 @@ import org.springframework.data.repository.query.Param;
 public interface BitacoraRepository extends JpaRepository<BitacoraEntity, Long> {
 
     @Query(value = """
-            SELECT CONVERT(VARCHAR(10), b.fecha_hora, 103) + ' ' + CONVERT(VARCHAR(8), b.fecha_hora, 108) AS fechaHora,
+            SELECT b.bitacora_id AS bitacoraId,
+                   b.fecha_hora AS fechaHora,
                    LTRIM(RTRIM(CONCAT(u.nombres, ' ', u.ape_paterno, ' ', u.ape_materno))) AS nombreUsuario,
                    r.nombre AS nombreRol,
                    b.modulo AS modulo,
                    b.accion AS accion,
-                   b.detalle AS detalle
+                   b.detalle AS detalle,
+                   b.registro_id AS registroId
             FROM bitacora b
             LEFT JOIN usuario u ON u.usuario_id = b.usuario_id
             LEFT JOIN rol r ON r.rol_id = b.rol_id
-            WHERE (:busqueda IS NULL OR :busqueda = ''
+            WHERE (CAST(:busqueda AS VARCHAR(255)) IS NULL OR :busqueda = ''
                    OR LOWER(LTRIM(RTRIM(CONCAT(u.nombres, ' ', u.ape_paterno, ' ', u.ape_materno)))) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                    OR LOWER(COALESCE(b.detalle, '')) LIKE LOWER(CONCAT('%', :busqueda, '%')))
-              AND (:modulo IS NULL OR :modulo = '' OR b.modulo = :modulo)
-              AND (:accion IS NULL OR :accion = '' OR b.accion = :accion)
-              AND (:fechaDesde IS NULL OR b.fecha_hora >= :fechaDesde)
-              AND (:fechaHasta IS NULL OR b.fecha_hora < DATEADD(day, 1, :fechaHasta))
+              AND (CAST(:modulo AS VARCHAR(100)) IS NULL OR :modulo = '' OR b.modulo = :modulo)
+              AND (CAST(:accion AS VARCHAR(30)) IS NULL OR :accion = '' OR b.accion = :accion)
+              AND (CAST(:fechaDesde AS DATE) IS NULL OR b.fecha_hora >= :fechaDesde)
+              AND (CAST(:fechaHasta AS DATE) IS NULL OR b.fecha_hora < DATEADD(day, 1, CAST(:fechaHasta AS DATE)))
             ORDER BY b.fecha_hora DESC, b.bitacora_id DESC
             """,
             countQuery = """
                     SELECT COUNT(*)
                     FROM bitacora b
                     LEFT JOIN usuario u ON u.usuario_id = b.usuario_id
-                    WHERE (:busqueda IS NULL OR :busqueda = ''
+                    WHERE (CAST(:busqueda AS VARCHAR(255)) IS NULL OR :busqueda = ''
                            OR LOWER(LTRIM(RTRIM(CONCAT(u.nombres, ' ', u.ape_paterno, ' ', u.ape_materno)))) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                            OR LOWER(COALESCE(b.detalle, '')) LIKE LOWER(CONCAT('%', :busqueda, '%')))
-                      AND (:modulo IS NULL OR :modulo = '' OR b.modulo = :modulo)
-                      AND (:accion IS NULL OR :accion = '' OR b.accion = :accion)
-                      AND (:fechaDesde IS NULL OR b.fecha_hora >= :fechaDesde)
-                      AND (:fechaHasta IS NULL OR b.fecha_hora < DATEADD(day, 1, :fechaHasta))
+                      AND (CAST(:modulo AS VARCHAR(100)) IS NULL OR :modulo = '' OR b.modulo = :modulo)
+                      AND (CAST(:accion AS VARCHAR(30)) IS NULL OR :accion = '' OR b.accion = :accion)
+                      AND (CAST(:fechaDesde AS DATE) IS NULL OR b.fecha_hora >= :fechaDesde)
+                      AND (CAST(:fechaHasta AS DATE) IS NULL OR b.fecha_hora < DATEADD(day, 1, :fechaHasta))
                     """,
             nativeQuery = true)
     Page<BitacoraProjection> listar(@Param("busqueda") String busqueda,

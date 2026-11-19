@@ -6,6 +6,13 @@ import com.agrihusac.SysInvent.service.catalogo.CatalogoService;
 import com.agrihusac.SysInvent.utils.CustomPage;
 import org.springframework.data.domain.Pageable;
 
-public interface ContactoService extends CatalogoService<ContactoRequest, ContactoResponse> {
-    CustomPage<ContactoResponse> listarPorProveedor(String filtro, Integer proveedorId, Pageable pageable);
+public interface ContactoService
+        extends CatalogoService<ContactoRequest, ContactoResponse> {
+
+    CustomPage<ContactoResponse> listar(
+            String filtro,
+            Integer proveedorId,
+            Boolean estado,
+            Pageable pageable
+    );
 }

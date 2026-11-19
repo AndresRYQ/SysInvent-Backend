@@ -39,7 +39,210 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/usuarios/perfil",
+                                "/api/usuarios/perfil/**"
+                        ).authenticated()
+                        .requestMatchers("/api/usuarios/**")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/usuarios"
+                        )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/roles/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/roles",
+                                "MODULE_/usuarios"
+                        )
+                        .requestMatchers("/api/roles/**")
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/roles"
+                        )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/catalogos/**",
+                                "/api/categorias/**"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/tipos-producto/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/tipos-producto"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/tipos-documento/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/tipos-documento"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/destinos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/destinos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/unidades-medida/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/unidades-medida"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/categorias/**",
+                                "/api/categorias/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/categorias"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/centros-costo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/centros-costos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/partes-equipo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/partes-equipo"
+                        )
+                        .requestMatchers(
+                                "/api/v1/catalogos/productos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/productos"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/proveedores/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/proveedores"
+                        )
+
+                        .requestMatchers(
+                                "/api/v1/catalogos/contactos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/contactos"
+                        )
+                        .requestMatchers(
+                                "/api/ingresos-almacen/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/ingresos-almacen"
+                        )
+                        .requestMatchers(
+                                "/api/vales-consumo/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/vales-consumo"
+                        )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/almacen/**",
+                                "/api/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/control-almacen",
+                                "MODULE_/reportes/kardex"
+                        )
+
+                        .requestMatchers(
+                                "/api/almacen/**",
+                                "/api/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/control-almacen"
+                        )
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/bitacora",
+                                "/api/bitacora/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/bitacora"
+                        )
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/bitacora",
+                                "/api/bitacora/**"
+                        )
+                        .authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/dashboard",
+                                "/api/dashboard/**"
+                        )
+                        .authenticated()
+
+                        .requestMatchers(
+                                "/api/reportes/ingresos",
+                                "/api/reportes/ingresos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/ingresos"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/vales",
+                                "/api/reportes/vales/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/vales"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/productos-mas-pedidos",
+                                "/api/reportes/productos-mas-pedidos/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/productos-mas-pedidos"
+                        )
+
+                        .requestMatchers(
+                                "/api/reportes/kardex",
+                                "/api/reportes/kardex/**"
+                        )
+                        .hasAnyAuthority(
+                                "ROLE_ADMIN",
+                                "MODULE_/reportes/kardex",
+                                "MODULE_/control-almacen"
+                        )
                         .anyRequest().authenticated()
                 )
                 .cors(Customizer.withDefaults())

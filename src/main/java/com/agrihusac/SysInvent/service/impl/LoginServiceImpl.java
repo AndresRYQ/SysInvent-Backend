@@ -66,6 +66,18 @@ public class LoginServiceImpl implements LoginService {
                             HttpStatus.FORBIDDEN.value(), null));
         }
 
+        Integer rolId = rolesIds.get(0);
+        RolEntity rol = rolRepository.findById(rolId).orElse(null);
+
+        if (rol == null || !Boolean.TRUE.equals(rol.getActivo())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new LoginResponse(false,
+                            "El usuario no tiene un rol activo",
+                            HttpStatus.FORBIDDEN.value(), null));
+        }
+
+        String nombreRol = rol.getNombre();
+
         List<RolModuloEntity> relacionesRolModulo = rolesIds.isEmpty()
                 ? List.of()
                 : rolModuloRepository.findAllByRolIdInAndActivoTrue(rolesIds);
@@ -94,9 +106,6 @@ public class LoginServiceImpl implements LoginService {
         List<Map<String, Object>> modulos = new ArrayList<>();
         Set<Integer> moduloIdsIncluidos = new LinkedHashSet<>();
 
-        Integer rolId = rolesIds.get(0);
-        RolEntity rol = rolRepository.findById(rolId).orElse(null);
-        String nombreRol = rol != null ? rol.getNombre() : null;
         List<Integer> moduloIds = administrador
                 ? List.of()
                 : moduloIdsPorRol.getOrDefault(rolId, List.of());

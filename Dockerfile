@@ -14,6 +14,8 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
+ENV SPRING_PROFILES_ACTIVE=prod
+
 COPY --from=builder /app/target/*.jar app.jar
 
 # Render proporciona PORT. 8080 se usa como valor local por defecto.

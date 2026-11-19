@@ -1,11 +1,12 @@
 package com.agrihusac.SysInvent.model.projection;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public interface ReporteValeListadoProjection {
     Integer getValeConsumoId();
     String getNumeroVale();
-    String getFechaVale();
+    LocalDate getFechaVale();
     String getCentroCosto();
     String getSolicitante();
     String getCodigoProducto();

@@ -10,12 +10,14 @@ import lombok.Setter;
 public class CambiarContrasenaRequest {
 
     @NotBlank(message = "La contrasena actual es obligatoria")
+    @Size(max = 255, message = "{message.longitudmax}")
     private String contrasenaActual;
 
     @NotBlank(message = "La nueva contrasena es obligatoria")
-    @Size(min = 6, message = "La nueva contrasena debe tener al menos 6 caracteres")
+    @Size(min = 6, max = 72, message = "La nueva contrasena debe tener entre 6 y 72 caracteres")
     private String nuevaContrasena;
 
     @NotBlank(message = "La confirmacion es obligatoria")
+    @Size(max = 72, message = "{message.longitudmax}")
     private String confirmarContrasena;
 }
