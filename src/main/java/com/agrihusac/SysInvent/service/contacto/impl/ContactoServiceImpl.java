@@ -33,10 +33,10 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     protected ContactoEntity crearEntidad(ContactoRequest request) {
         ContactoEntity entity = new ContactoEntity();
         entity.setProveedor(proveedorRepository.findById(request.proveedorId()).orElseThrow());
-        entity.setNombreCompleto(request.nombreCompleto());
-        entity.setCargo(request.cargo());
-        entity.setTelefono(request.telefono());
-        entity.setCorreo(request.correo());
+        entity.setNombreCompleto(request.nombreCompleto().trim());
+        entity.setCargo(limpiarOpcional(request.cargo()));
+        entity.setTelefono(limpiarOpcional(request.telefono()));
+        entity.setCorreo(limpiarOpcional(request.correo()));
         entity.setActivo(true);
         return entity;
     }
@@ -44,10 +44,10 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
     @Override
     protected void actualizarEntidad(ContactoEntity entity, ContactoRequest request) {
         entity.setProveedor(proveedorRepository.findById(request.proveedorId()).orElseThrow());
-        entity.setNombreCompleto(request.nombreCompleto());
-        entity.setCargo(request.cargo());
-        entity.setTelefono(request.telefono());
-        entity.setCorreo(request.correo());
+        entity.setNombreCompleto(request.nombreCompleto().trim());
+        entity.setCargo(limpiarOpcional(request.cargo()));
+        entity.setTelefono(limpiarOpcional(request.telefono()));
+        entity.setCorreo(limpiarOpcional(request.correo()));
     }
 
     @Override
@@ -57,7 +57,18 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
 
     @Override
     protected boolean duplicado(ContactoRequest request, Integer idExcluido) {
-        return false;
+        String nombreCompleto = request.nombreCompleto().trim();
+        if (idExcluido == null) {
+            return repository.existsByProveedorProveedorIdAndNombreCompletoIgnoreCase(
+                    request.proveedorId(),
+                    nombreCompleto
+            );
+        }
+        return repository.existsByProveedorProveedorIdAndNombreCompletoIgnoreCaseAndContactoIdNot(
+                request.proveedorId(),
+                nombreCompleto,
+                idExcluido
+        );
     }
 
     @Override
@@ -104,5 +115,13 @@ public class ContactoServiceImpl extends AbstractCatalogoService<ContactoEntity,
             return MessageResponse.setResponse(false, HttpStatus.NOT_FOUND, "No se encontro un proveedor activo con ese id");
         }
         return null;
+    }
+
+    private String limpiarOpcional(String valor) {
+        if (valor == null) {
+            return null;
+        }
+        String limpio = valor.trim();
+        return limpio.isEmpty() ? null : limpio;
     }
 }
