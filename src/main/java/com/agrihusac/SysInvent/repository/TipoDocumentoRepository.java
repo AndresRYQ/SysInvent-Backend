@@ -7,9 +7,20 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TipoDocumentoRepository extends JpaRepository<TipoDocumentoEntity, Integer> {
+
     List<TipoDocumentoEntity> findAllByActivoTrueOrderByNombreAsc();
+
     Page<TipoDocumentoEntity> findByNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
     Page<TipoDocumentoEntity> findByActivoTrueAndNombreContainingIgnoreCase(String filtro, Pageable pageable);
+
+    Page<TipoDocumentoEntity> findByActivoAndNombreContainingIgnoreCase(
+            Boolean activo,
+            String filtro,
+            Pageable pageable
+    );
+
     boolean existsByNombreIgnoreCase(String value);
+
     boolean existsByNombreIgnoreCaseAndTipoDocumentoIdNot(String value, Integer id);
 }

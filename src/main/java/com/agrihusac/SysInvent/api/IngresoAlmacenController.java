@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -59,5 +60,16 @@ public class IngresoAlmacenController {
     @PostMapping
     public ResponseEntity<Object> crear(@Valid @RequestBody IngresoAlmacenRequest request) {
         return ingresoAlmacenService.registrar(request);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Object> actualizar(
+            @PathVariable @Min(1) Integer id,
+            @Valid @RequestBody IngresoAlmacenRequest request
+    ) {
+        return ingresoAlmacenService.actualizar(
+                id,
+                request
+        );
     }
 }

@@ -1,0 +1,105 @@
+name: Reportar incidente
+description: Registrar una falla detectada en SysInvent
+title: "[INCIDENTE] "
+labels:
+  - incidente
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Utiliza este formulario para registrar, priorizar y dar seguimiento a un incidente de SysInvent.
+
+  - type: dropdown
+    id: componente
+    attributes:
+      label: Componente afectado
+      description: Selecciona el componente donde ocurrió el incidente.
+      options:
+        - Frontend
+        - Backend
+        - Base de datos
+        - Integración frontend-backend
+        - CI/CD
+    validations:
+      required: true
+
+  - type: dropdown
+    id: modulo
+    attributes:
+      label: Módulo afectado
+      options:
+        - Autenticación
+        - Usuarios, roles y permisos
+        - Catálogos maestros
+        - Productos y proveedores
+        - Ingresos de almacén
+        - Vales de consumo
+        - Control de almacén y Kardex
+        - Auditoría
+        - Dashboard y reportes
+        - Otro
+    validations:
+      required: true
+
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      description: Indica el impacto del incidente.
+      options:
+        - Crítica
+        - Alta
+        - Media
+        - Baja
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripción del incidente
+      description: Explica claramente qué ocurrió.
+      placeholder: Describe el problema observado.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducir
+      description: Detalla cómo volver a producir el incidente.
+      placeholder: |
+        1. Iniciar sesión.
+        2. Ingresar al módulo.
+        3. Ejecutar la acción.
+        4. Observar el error.
+    validations:
+      required: true
+
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Resultado esperado
+      description: Indica cómo debería funcionar el sistema.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidencia
+      description: Adjunta capturas, mensajes de error o registros relevantes.
+
+  - type: input
+    id: version
+    attributes:
+      label: Rama, versión o commit
+      placeholder: feature/scrum-55-flujo-ci-cd-incidentes
+
+  - type: checkboxes
+    id: verificacion
+    attributes:
+      label: Verificación
+      options:
+        - label: Confirmo que revisé si el incidente ya fue reportado.
+          required: true

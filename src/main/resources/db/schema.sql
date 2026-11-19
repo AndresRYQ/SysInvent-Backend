@@ -489,6 +489,7 @@ FROM (VALUES
     ('Reporte de ingresos', '/reportes/ingresos'),
     ('Reporte de vales', '/reportes/vales'),
     ('Productos más pedidos', '/reportes/productos-mas-pedidos'),
+    ('Reporte Kardex', '/reportes/kardex'),
     ('Contactos', '/contactos'),
     ('Partes de equipo', '/partes-equipo'),
     ('Control de almacén', '/control-almacen'),

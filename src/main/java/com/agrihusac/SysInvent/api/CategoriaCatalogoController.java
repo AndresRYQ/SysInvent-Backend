@@ -32,11 +32,28 @@ public class CategoriaCatalogoController {
     @GetMapping
     @Operation(operationId = "listarCategoriasCatalogo", summary = "Listar categorías")
     public CustomPage<CategoriaCatalogoResponse> listarCategorias(
-            @RequestParam(value = "nombre", required = false) String nombre,
-            @RequestParam(value = "pagina", defaultValue = "1") @Min(1) Integer pagina,
-            @RequestParam(value = "tamPagina", defaultValue = "10") @Min(1) @Max(100) Integer tamPagina) {
+            @RequestParam(
+                    value = "nombre",
+                    required = false
+            ) String nombre,
+            @RequestParam(
+                    value = "estado",
+                    required = false
+            ) Boolean estado,
+            @RequestParam(
+                    value = "pagina",
+                    defaultValue = "1"
+            ) @Min(1) Integer pagina,
+            @RequestParam(
+                    value = "tamPagina",
+                    defaultValue = "10"
+            ) @Min(1) @Max(100) Integer tamPagina) {
         Pageable pageable = PageRequest.of(pagina - 1, tamPagina);
-        return service.listar(nombre, pageable);
+        return service.listar(
+                nombre,
+                estado,
+                pageable
+        );
     }
 
     @PostMapping

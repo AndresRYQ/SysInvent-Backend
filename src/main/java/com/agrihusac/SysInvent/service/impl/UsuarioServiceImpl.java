@@ -19,6 +19,7 @@ import com.agrihusac.SysInvent.service.UsuarioService;
 import com.agrihusac.SysInvent.service.bitacora.BitacoraService;
 import com.agrihusac.SysInvent.utils.MessageResponse;
 import com.agrihusac.SysInvent.utils.CustomPage;
+import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.ArrayList;
@@ -51,7 +52,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     private static final String MSG_ROL_DUPLICADO = "La lista de roles contiene valores duplicados";
     private static final String MSG_UNICO_ROL = "El usuario debe tener exactamente un rol";
     private static final String MSG_CONTRASENA_ACTUAL_INVALIDA = "La contrasena actual es incorrecta";
-    private static final String CONTRASENA_TEMPORAL = "agrihusac123";
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -60,6 +60,9 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final GlobalMapper globalMapper;
     private final BitacoraService bitacoraService;
     private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${app.security.initial-user-password}")
+    private String contrasenaTemporalConfigurada;
 
     @Override
     @Transactional(readOnly = true)
@@ -192,7 +195,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             return MessageResponse.setResponse(Boolean.FALSE, HttpStatus.NOT_FOUND, MSG_ROL_NO_ENCONTRADO);
         }
 
-        String contrasenaTemporal = CONTRASENA_TEMPORAL;
+        String contrasenaTemporal =
+                obtenerContrasenaTemporal();
 
         UsuarioEntity usuario = UsuarioEntity.builder()
                 .usuario(request.getDni())
@@ -222,6 +226,13 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getNombres(),
                 usuario.getUsuario(),
                 contrasenaTemporal));
+
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("CREAR")
+                .detalle("Se registró el usuario \"" + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
 
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.CREATED, MSG_USUARIO_REGISTRADO);
     }
@@ -267,6 +278,14 @@ public class UsuarioServiceImpl implements UsuarioService {
                         .build());
         }
 
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("EDITAR")
+                .detalle("Se actualizaron los datos y el rol del usuario \""
+                        + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, MSG_USUARIO_ACTUALIZADO);
     }
 
@@ -282,7 +301,28 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioRepository.save(usuario);
 
         String mensaje = activo ? MSG_USUARIO_ACTIVADO : MSG_USUARIO_DESACTIVADO;
+
+        bitacoraService.registrar(BitacoraRequest.builder()
+                .modulo("Usuarios")
+                .accion("EDITAR")
+                .detalle((activo ? "Se activó" : "Se desactivó")
+                        + " el usuario \"" + usuario.getUsuario() + "\".")
+                .registroId(usuario.getCodigo())
+                .build());
+
         return MessageResponse.setResponse(Boolean.TRUE, HttpStatus.OK, mensaje);
+    }
+
+    private String obtenerContrasenaTemporal() {
+        if (contrasenaTemporalConfigurada == null
+                || contrasenaTemporalConfigurada.isBlank()
+                || contrasenaTemporalConfigurada.length() < 12) {
+            throw new IllegalStateException(
+                    "INITIAL_USER_PASSWORD debe tener al menos 12 caracteres"
+            );
+        }
+
+        return contrasenaTemporalConfigurada;
     }
 
 }

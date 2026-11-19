@@ -39,10 +39,28 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
                    tp.nombre AS tipo,
                    c.nombre AS categoria,
                    pr.razon_social AS proveedor,
-                   COALESCE(SUM(CASE WHEN k.tipo_movimiento IN ('ENTRADA_INGRESO', 'AJUSTE_ENTRADA')
-                                     THEN k.cantidad ELSE 0 END), 0) AS entradas,
-                   COALESCE(SUM(CASE WHEN k.tipo_movimiento IN ('SALIDA_VALE', 'AJUSTE_SALIDA', 'ANULACION_ENTRADA')
-                                     THEN k.cantidad ELSE 0 END), 0) AS salidas,
+                   COALESCE(SUM(
+                       CASE
+                           WHEN k.ingreso_almacen_id IS NOT NULL
+                                AND k.tipo_movimiento IN ('ENTRADA_INGRESO', 'AJUSTE_ENTRADA')
+                               THEN k.cantidad
+                           WHEN k.ingreso_almacen_id IS NOT NULL
+                                AND k.tipo_movimiento = 'AJUSTE_SALIDA'
+                               THEN -k.cantidad
+                           ELSE 0
+                       END
+                   ), 0) AS entradas,
+                   COALESCE(SUM(
+                       CASE
+                           WHEN k.ingreso_almacen_id IS NULL
+                                AND k.tipo_movimiento IN ('SALIDA_VALE', 'AJUSTE_SALIDA')
+                               THEN k.cantidad
+                           WHEN k.ingreso_almacen_id IS NULL
+                                AND k.tipo_movimiento IN ('AJUSTE_ENTRADA', 'ANULACION_ENTRADA')
+                               THEN -k.cantidad
+                           ELSE 0
+                       END
+                   ), 0) AS salidas,
                    p.stock_actual AS stock,
                    CASE WHEN p.stock_actual > 0 THEN 'CON_STOCK' ELSE 'SIN_STOCK' END AS estado
               FROM producto p
@@ -54,7 +72,7 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
                 ON k.producto_id = p.producto_id
                AND (:fechaDesde IS NULL OR k.fecha_movimiento >= :fechaDesde)
                AND (:fechaHasta IS NULL OR k.fecha_movimiento < :fechaHasta)
-             WHERE p.activo = 1
+             WHERE p.activo = CAST(1 AS BIT)
                AND (:busqueda = '' OR LOWER(p.codigo) LIKE LOWER(CONCAT('%', :busqueda, '%'))
                     OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')))
                AND (:tipoProductoId IS NULL OR p.tipo_producto_id = :tipoProductoId)
@@ -67,17 +85,17 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
              ORDER BY p.nombre ASC
             """,
             countQuery = """
-            SELECT COUNT(*)
-              FROM producto p
-             WHERE p.activo = 1
-               AND (:busqueda = '' OR LOWER(p.codigo) LIKE LOWER(CONCAT('%', :busqueda, '%'))
-                    OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')))
-               AND (:tipoProductoId IS NULL OR p.tipo_producto_id = :tipoProductoId)
-               AND (:categoriaId IS NULL OR p.categoria_id = :categoriaId)
-               AND (:estado IS NULL OR :estado = ''
-                    OR (:estado = 'CON_STOCK' AND p.stock_actual > 0)
-                    OR (:estado = 'SIN_STOCK' AND p.stock_actual <= 0))
-            """,
+                    SELECT COUNT(*)
+                      FROM producto p
+                     WHERE p.activo = CAST(1 AS BIT)
+                       AND (:busqueda = '' OR LOWER(p.codigo) LIKE LOWER(CONCAT('%', :busqueda, '%'))
+                            OR LOWER(p.nombre) LIKE LOWER(CONCAT('%', :busqueda, '%')))
+                       AND (:tipoProductoId IS NULL OR p.tipo_producto_id = :tipoProductoId)
+                       AND (:categoriaId IS NULL OR p.categoria_id = :categoriaId)
+                       AND (:estado IS NULL OR :estado = ''
+                            OR (:estado = 'CON_STOCK' AND p.stock_actual > 0)
+                            OR (:estado = 'SIN_STOCK' AND p.stock_actual <= 0))
+                    """,
             nativeQuery = true)
     Page<ControlAlmacenListadoProjection> listarControlAlmacen(
             @Param("busqueda") String busqueda,
@@ -119,4 +137,24 @@ public interface ProductoRepository extends JpaRepository<ProductoEntity, Intege
     boolean existsByCodigoIgnoreCase(String codigo);
 
     boolean existsByCodigoIgnoreCaseAndProductoIdNot(String codigo, Integer productoId);
+
+    @Query("""
+        select p
+        from ProductoEntity p
+        where (
+            :filtro = ''
+            or lower(p.codigo) like lower(concat('%', :filtro, '%'))
+            or lower(p.nombre) like lower(concat('%', :filtro, '%'))
+        )
+        and (:tipoProductoId is null or p.tipoProductoId = :tipoProductoId)
+        and (:categoriaId is null or p.categoriaId = :categoriaId)
+        and (:estado is null or p.activo = :estado)
+        """)
+    Page<ProductoEntity> buscarProductosCatalogo(
+            @Param("filtro") String filtro,
+            @Param("tipoProductoId") Integer tipoProductoId,
+            @Param("categoriaId") Integer categoriaId,
+            @Param("estado") Boolean estado,
+            Pageable pageable
+    );
 }

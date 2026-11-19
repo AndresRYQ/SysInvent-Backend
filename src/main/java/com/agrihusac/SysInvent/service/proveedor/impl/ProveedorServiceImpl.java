@@ -60,13 +60,41 @@ public class ProveedorServiceImpl extends AbstractCatalogoService<ProveedorEntit
     }
 
     @Override
-    protected String nombreCatalogo() { return "Proveedor"; }
+    protected Page<ProveedorEntity> buscarPorEstado(
+            String filtro,
+            Boolean estado,
+            Pageable pageable
+    ) {
+        if (estado == null) {
+            return repository
+                    .findByRazonSocialContainingIgnoreCase(
+                            filtro,
+                            pageable
+                    );
+        }
+
+        return repository
+                .findByActivoAndRazonSocialContainingIgnoreCase(
+                        estado,
+                        filtro,
+                        pageable
+                );
+    }
 
     @Override
-    protected void establecerActivo(ProveedorEntity entity, boolean activo) { entity.setActivo(activo); }
+    protected String nombreCatalogo() {
+        return "Proveedor";
+    }
 
     @Override
-    protected boolean estaActivo(ProveedorEntity entity) { return Boolean.TRUE.equals(entity.getActivo()); }
+    protected void establecerActivo(ProveedorEntity entity, boolean activo) {
+        entity.setActivo(activo);
+    }
+
+    @Override
+    protected boolean estaActivo(ProveedorEntity entity) {
+        return Boolean.TRUE.equals(entity.getActivo());
+    }
 
     @Override
     protected ResponseEntity<MessageResponse> validar(ProveedorRequest request) {

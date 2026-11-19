@@ -8,7 +8,9 @@ import com.agrihusac.SysInvent.service.dashboard.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.PageRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +23,22 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     public DashboardResponse obtener() {
-        DashboardResumenProjection resumen = dashboardRepository.resumen();
-        List<DashboardActividadProjection> actividades = dashboardRepository.actividadReciente();
+        LocalDate hoy = LocalDate.now();
+        LocalDate inicioMes = hoy.withDayOfMonth(1);
+        LocalDate siguienteMes = inicioMes.plusMonths(1);
+        LocalDateTime inicioDia = hoy.atStartOfDay();
+        LocalDateTime siguienteDia = hoy.plusDays(1).atStartOfDay();
+
+        DashboardResumenProjection resumen = dashboardRepository.resumen(
+                inicioMes,
+                siguienteMes,
+                inicioDia,
+                siguienteDia
+        );
+        List<DashboardActividadProjection> actividades =
+                dashboardRepository.actividadReciente(
+                        PageRequest.of(0, 5)
+                );
 
         List<DashboardResponse.Alerta> alertas = new ArrayList<>();
         if (resumen.getStockCritico() > 0) {
@@ -50,8 +66,12 @@ public class DashboardServiceImpl implements DashboardService {
 
         return new DashboardResponse(
                 new DashboardResponse.Cards(
-                        resumen.getProductosActivos(), resumen.getStockCritico(),
-                        resumen.getIngresosMes(), resumen.getValesMes(), resumen.getMovimientosHoy()),
+                        resumen.getProductosActivos(),
+                        resumen.getStockCritico(),
+                        resumen.getProductosSinStock(),
+                        resumen.getIngresosMes(),
+                        resumen.getValesMes(),
+                        resumen.getMovimientosHoy()),
                 alertas,
                 actividadResponse);
     }

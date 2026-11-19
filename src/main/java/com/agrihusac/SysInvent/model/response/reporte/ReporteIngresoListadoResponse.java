@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import java.time.LocalDate;
 import java.math.BigDecimal;
 
 @Getter
@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 public class ReporteIngresoListadoResponse {
     private Integer ingresoAlmacenId;
     private String numeroIngreso;
-    private String fechaIngreso;
+    private LocalDate fechaIngreso;
     private String proveedor;
     private String documento;
     private String tipoProducto;
